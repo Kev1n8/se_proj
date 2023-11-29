@@ -64,8 +64,8 @@ public class ModifyServiceImpl implements ModifyService {
     }
 
     @Override
-    public boolean addTeacher(String teacherId, String teacherName, int age, String gender, String department) {
-        String id = teacherRepository.save(new Teacher(teacherId, teacherName, age, gender, department)).getId();
+    public boolean addTeacher(String teacherId, String teacherName, int age, String gender, String department, String password) {
+        String id = teacherRepository.save(new Teacher(teacherId, teacherName, age, gender, department, password)).getId();
         if (id == null) {
             logger.error("Error adding teacher with name: {}", teacherName);
             return false;

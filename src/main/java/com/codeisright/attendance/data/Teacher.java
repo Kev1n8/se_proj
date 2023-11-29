@@ -10,6 +10,8 @@ public class Teacher {
 
     private String teacherName;
 
+    private String codedPassword;
+
     private int age;
 
     private String gender;
@@ -18,12 +20,13 @@ public class Teacher {
 
     protected Teacher() {}
 
-    public Teacher(String teacherId, String teacherName, int age, String gender, String department) {
+    public Teacher(String teacherId, String teacherName, int age, String gender, String department, String codedPassword) {
         this.teacherId = teacherId;
         this.teacherName = teacherName;
         this.age = age;
         this.gender = gender;
         this.department = department;
+        this.codedPassword = codedPassword;
     }
 
     public String getId() {
@@ -64,5 +67,25 @@ public class Teacher {
 
     public void setGender(String gender) {
         this.gender = gender;
+    }
+
+    public String getCodedPassword() {
+        return codedPassword;
+    }
+
+    public void setCodedPassword(String codedPassword) {
+        this.codedPassword = codedPassword;
+    }
+
+    @Override
+    public String toString() {
+        return "Teacher{" +
+                "teacherId='" + teacherId + '\'' +
+                ", teacherName='" + teacherName + '\'' +
+                ", codedPassword='" + codedPassword + '\'' +
+                ", age=" + age +
+                ", gender='" + gender + '\'' +
+                ", department='" + department + '\'' +
+                '}';
     }
 }

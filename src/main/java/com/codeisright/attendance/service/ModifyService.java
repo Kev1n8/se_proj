@@ -31,9 +31,10 @@ public interface ModifyService {
      * @param age
      * @param gender
      * @param department
+     * @param password
      * @return true if the teacher is added successfully, false otherwise.
      */
-    boolean addTeacher(String teacherId, String teacherName, int age, String gender, String department);
+    boolean addTeacher(String teacherId, String teacherName, int age, String gender, String department, String password);
 
     /**
      * Add a published to the database.

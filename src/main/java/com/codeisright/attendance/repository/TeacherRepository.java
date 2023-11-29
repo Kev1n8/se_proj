@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface TeacherRepository extends JpaRepository<Teacher, String> {
-    public List<Teacher> findByDepartment(String department);
+    List<Teacher> findByDepartment(String department);
+
+    Teacher findByTeacherName(String teacherName);
 }
