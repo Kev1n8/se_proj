@@ -3,11 +3,9 @@ package com.codeisright.attendance.data;
 import jakarta.persistence.*;
 
 @Entity
-@PrimaryKeyJoinColumn(name="teacherId", referencedColumnName="userId")
-public class Teacher extends User{
+public class Teacher {
 
     @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private String teacherId;
 
     private String teacherName;
@@ -20,9 +18,11 @@ public class Teacher extends User{
 
     protected Teacher() {}
 
-    public Teacher(String teacherId, String teacherName, String department) {
+    public Teacher(String teacherId, String teacherName, int age, String gender, String department) {
         this.teacherId = teacherId;
         this.teacherName = teacherName;
+        this.age = age;
+        this.gender = gender;
         this.department = department;
     }
 

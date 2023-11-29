@@ -12,10 +12,6 @@ public class AClass {
 
     private String description;
 
-    @ManyToOne
-    @JoinColumn(name="locationId")
-    private Location location;
-
     private int grade;
 
     @ManyToOne
@@ -28,11 +24,9 @@ public class AClass {
 
     protected AClass() {}
 
-    public AClass(String classId, String title, String description, Location location, int grade, Course course, Teacher teacher) {
-        this.classId = classId;
+    public AClass(String title, String description, int grade, Course course, Teacher teacher) {
         this.title = title;
         this.description = description;
-        this.location = location;
         this.grade = grade;
         this.course = course;
         this.teacher = teacher;
@@ -60,14 +54,6 @@ public class AClass {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Location getLocation() {
-        return location;
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
     }
 
     public int getGrade() {
@@ -100,7 +86,6 @@ public class AClass {
                 "classId='" + classId + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", location='" + location + '\'' +
                 ", grade=" + grade +
                 ", course=" + course +
                 ", teacher=" + teacher +

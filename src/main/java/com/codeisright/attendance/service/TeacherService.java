@@ -1,6 +1,7 @@
 package com.codeisright.attendance.service;
 
 import com.codeisright.attendance.data.Teacher;
+import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,8 +26,7 @@ public class TeacherService {
     }
 
     public Teacher updateTeacher(Teacher teacher) {
-        Teacher existingTeacher = teacherRepository.findById(teacher.getId()).orElse(null);
-        assert existingTeacher != null;
+        Teacher existingTeacher = teacherRepository.findById(teacher.getId()).orElseThrow(() -> new EntityNotFoundException("Teacher not found with ID: "+teacher.getId()));
         existingTeacher.setName(teacher.getName());
         existingTeacher.setAge(teacher.getAge());
         existingTeacher.setGender(teacher.getGender());

@@ -3,23 +3,15 @@ package com.codeisright.attendance.data;
 import jakarta.persistence.*;
 
 @Entity
-@PrimaryKeyJoinColumn(name="studentId", referencedColumnName="userId")
-public class Student extends User{
+public class Student {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private String studentId;
-
     private String studentName;
-
     private int age;
-
     private String gender;
-
     private String major;
-
     private String studentClass;
-
     protected Student() {}
 
     public Student(String studentId, String studentName, int age, String gender, String major, String studentClass) {

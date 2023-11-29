@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 public class Course {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
     private String courseCode;
 
     private String courseName;
@@ -17,9 +16,10 @@ public class Course {
 
     protected Course() {}
 
-    public Course(String courseId, String courseCode, String courseName, Teacher teacher, LocalDateTime classTime) {
-        this.courseCode = courseId;
+    public Course(String courseCode, String courseName) {
+        this.courseCode = courseCode;
         this.courseName = courseName;
+        this.courseDescription = courseDescription;
     }
 
     public String getId() {
@@ -38,8 +38,20 @@ public class Course {
         this.courseName = courseName;
     }
 
+    public String getCourseCode() {
+        return courseCode;
+    }
 
-    public void setTime(LocalDateTime classTime) {
+    public void setCourseCode(String courseCode) {
+        this.courseCode = courseCode;
+    }
+
+    public String getCourseName() {
+        return courseName;
+    }
+
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
     }
 
     public String getCourseDescription() {

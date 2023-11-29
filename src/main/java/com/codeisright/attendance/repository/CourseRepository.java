@@ -5,13 +5,12 @@ import com.codeisright.attendance.data.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface CourseRepository extends JpaRepository<Course, String> {
-    public Course findByCourseName(String courseName);
+    Course findByCourseName(String courseName);
 
-    public Course findByCourseCode(String courseCode);
+    Course findByCourseCode(String courseCode);
 
-    public List<Course> findByTeacher_Name(String teacherName);
-
-    public List<Course> findByLocation(String location);
+    Course findByName(String courseName);
 }

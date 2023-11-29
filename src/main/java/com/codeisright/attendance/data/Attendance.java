@@ -19,17 +19,17 @@ public class Attendance {
     @JoinColumn(name="classId")
     private AClass aClass;
 
-    private String status;
+    private int status;
 
     private LocalDateTime time;
 
     protected Attendance() {}
 
-    public Attendance(String id, Student student, AClass aClass, String status, LocalDateTime time) {
-        this.id = id;
+    public Attendance(Student student, AClass aClass, int status, LocalDateTime time) {
         this.student = student;
         this.aClass = aClass;
         this.status = status;
+        assert this.status <= 3;
         this.time = time;
     }
 
@@ -57,11 +57,11 @@ public class Attendance {
         this.aClass = aClass;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
@@ -71,6 +71,10 @@ public class Attendance {
 
     public void setTime(LocalDateTime time) {
         this.time = time;
+    }
+
+    public void forward() {
+        this.status++;
     }
 
     @Override

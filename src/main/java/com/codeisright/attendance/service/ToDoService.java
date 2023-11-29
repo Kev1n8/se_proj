@@ -19,7 +19,7 @@ public class ToDoService {
     }
 
     public ToDo findById(Long id){
-        return toDoRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        return toDoRepository.findById(id).orElseThrow(()-> new EntityNotFoundException("ToDo not found with ID: "+id));
     }
 
     public ToDo save(ToDo toDo){
