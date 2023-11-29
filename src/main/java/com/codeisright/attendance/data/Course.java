@@ -3,7 +3,6 @@ package com.codeisright.attendance.data;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 
 @Entity
 public class Course {
@@ -12,9 +11,11 @@ public class Course {
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private String courseId;
 
-    private String courseNo;
+    private String courseCode;
 
     private String courseName;
+
+    private String courseDescription;
 
     @ManyToOne
     @JoinColumn(name="teacherId")
@@ -26,37 +27,37 @@ public class Course {
 
     protected Course() {}
 
-    public Course(String courseId, String courseNo, String courseName, Teacher teacher, LocalDateTime classTime,
+    public Course(String courseId, String courseCode, String courseName, Teacher teacher, LocalDateTime classTime,
                   String location) {
         this.courseId = courseId;
-        this.courseNo = courseNo;
+        this.courseCode = courseCode;
         this.courseName = courseName;
         this.teacher = teacher;
         this.classTime = classTime;
         this.location = location;
     }
 
-    public String getCourseId() {
+    public String getId() {
         return courseId;
     }
 
-    public void setCourseId(String courseId) {
+    public void setId(String courseId) {
         this.courseId = courseId;
     }
 
-    public String getCourseNo() {
-        return courseNo;
+    public String getCourseCode() {
+        return courseCode;
     }
 
-    public void setCourseNo(String courseNo) {
-        this.courseNo = courseNo;
+    public void setCourseCode(String courseNo) {
+        this.courseCode = courseNo;
     }
 
-    public String getCourseName() {
+    public String getName() {
         return courseName;
     }
 
-    public void setCourseName(String courseName) {
+    public void setName(String courseName) {
         this.courseName = courseName;
     }
 
@@ -68,11 +69,11 @@ public class Course {
         this.teacher = teacher;
     }
 
-    public LocalDateTime getClassTime() {
+    public LocalDateTime getTime() {
         return classTime;
     }
 
-    public void setClassTime(LocalDateTime classTime) {
+    public void setTime(LocalDateTime classTime) {
         this.classTime = classTime;
     }
 
@@ -84,12 +85,21 @@ public class Course {
         this.location = location;
     }
 
+    public String getCourseDescription() {
+        return courseDescription;
+    }
+
+    public void setCourseDescription(String courseDescription) {
+        this.courseDescription = courseDescription;
+    }
+
     @Override
     public String toString() {
         return "Course{" +
                 "courseId='" + courseId + '\'' +
-                ", courseNo='" + courseNo + '\'' +
+                ", courseCode='" + courseCode + '\'' +
                 ", courseName='" + courseName + '\'' +
+                ", courseDescription='" + courseDescription + '\'' +
                 ", teacher=" + teacher +
                 ", classTime=" + classTime +
                 ", location='" + location + '\'' +
