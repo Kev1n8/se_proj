@@ -16,8 +16,8 @@ public class Attendance {
     private Student student;
 
     @ManyToOne
-    @JoinColumn(name="courseId")
-    private Course course;
+    @JoinColumn(name="classId")
+    private AClass aClass;
 
     private String status;
 
@@ -25,10 +25,10 @@ public class Attendance {
 
     protected Attendance() {}
 
-    public Attendance(String id, Student student, Course course, String status, LocalDateTime time) {
+    public Attendance(String id, Student student, AClass aClass, String status, LocalDateTime time) {
         this.id = id;
         this.student = student;
-        this.course = course;
+        this.aClass = aClass;
         this.status = status;
         this.time = time;
     }
@@ -49,12 +49,12 @@ public class Attendance {
         this.student = student;
     }
 
-    public Course getCourse() {
-        return course;
+    public AClass getAClass() {
+        return aClass;
     }
 
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setAClass(AClass aClass) {
+        this.aClass = aClass;
     }
 
     public String getStatus() {
@@ -78,7 +78,7 @@ public class Attendance {
         return "Attendance{" +
                 "id='" + id + '\'' +
                 ", student=" + student +
-                ", course=" + course +
+                ", class=" + aClass +
                 ", status='" + status + '\'' +
                 ", time=" + time +
                 '}';

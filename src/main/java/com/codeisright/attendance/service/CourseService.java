@@ -1,7 +1,6 @@
 package com.codeisright.attendance.service;
 
 import com.codeisright.attendance.data.Course;
-import com.codeisright.attendance.data.Teacher;
 import com.codeisright.attendance.repository.CourseRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -36,12 +35,8 @@ public class CourseService {
     public Course updateCourse(Course course) {
         Course existingCourse = courseRepository.findById(course.getId()).orElse(null);
         assert existingCourse != null;
-        existingCourse.setCourseCode(course.getCourseCode());
         existingCourse.setCourseDescription(course.getCourseDescription());
         existingCourse.setName(course.getName());
-        existingCourse.setTime(course.getTime());
-        existingCourse.setTeacher(course.getTeacher());
-        existingCourse.setLocation(course.getLocation());
         return courseRepository.save(existingCourse);
     }
 
