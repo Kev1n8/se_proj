@@ -6,37 +6,37 @@ import jakarta.persistence.*;
 public class Student {
 
     @Id
-    private String studentId;
-    private String studentName;
+    private String id;
+    private String name;
     private int age;
     private String gender;
     private String major;
-    private String studentClass;
+    private String theclass;
     protected Student() {}
 
-    public Student(String studentId, String studentName, int age, String gender, String major, String studentClass) {
-        this.studentId = studentId;
-        this.studentName = studentName;
+    public Student(String id, String studentName, int age, String gender, String major, String studentClass) {
+        this.id = id;
+        this.name = studentName;
         this.age = age;
         this.gender = gender;
         this.major = major;
-        this.studentClass = studentClass;
+        this.theclass = studentClass;
     }
 
     public String getId() {
-        return studentId;
+        return id;
     }
 
     public void setId(String stuId) {
-        this.studentId = stuId;
+        this.id = stuId;
     }
 
     public String getName() {
-        return studentName;
+        return name;
     }
 
     public void setName(String stuName) {
-        this.studentName = stuName;
+        this.name = stuName;
     }
 
     public String getMajor() {
@@ -47,12 +47,12 @@ public class Student {
         this.major = major;
     }
 
-    public String getStudentClass() {
-        return studentClass;
+    public String getTheclass() {
+        return theclass;
     }
 
-    public void setStudentClass(String stuClass) {
-        this.studentClass = stuClass;
+    public void setTheclass(String stuClass) {
+        this.theclass = stuClass;
     }
 
     public int getAge() {
@@ -74,12 +74,12 @@ public class Student {
     @Override
     public String toString() {
         return "Student{" +
-                "studentId='" + studentId + '\'' +
-                ", studentName='" + studentName + '\'' +
+                "studentId='" + id + '\'' +
+                ", studentName='" + name + '\'' +
                 ", age=" + age +
                 ", gender='" + gender + '\'' +
                 ", major='" + major + '\'' +
-                ", studentClass='" + studentClass + '\'' +
+                ", studentClass='" + theclass + '\'' +
                 '}';
     }
 }

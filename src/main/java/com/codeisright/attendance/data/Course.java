@@ -2,72 +2,62 @@ package com.codeisright.attendance.data;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
-
 @Entity
 public class Course {
 
     @Id
-    private String courseCode;
+    private String code;
 
-    private String courseName;
+    private String name;
 
-    private String courseDescription;
+    private String description;
 
     protected Course() {}
 
-    public Course(String courseCode, String courseName) {
-        this.courseCode = courseCode;
-        this.courseName = courseName;
-        this.courseDescription = courseDescription;
+    public Course(String code, String name) {
+        this.code = code;
+        this.name = name;
+        this.description = description;
     }
 
     public String getId() {
-        return courseCode;
+        return code;
     }
 
     public void setId(String courseId) {
-        this.courseCode = courseId;
+        this.code = courseId;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String courseCode) {
+        this.code = courseCode;
     }
 
     public String getName() {
-        return courseName;
+        return name;
     }
 
     public void setName(String courseName) {
-        this.courseName = courseName;
+        this.name = courseName;
     }
 
-    public String getCourseCode() {
-        return courseCode;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCourseCode(String courseCode) {
-        this.courseCode = courseCode;
-    }
-
-    public String getCourseName() {
-        return courseName;
-    }
-
-    public void setCourseName(String courseName) {
-        this.courseName = courseName;
-    }
-
-    public String getCourseDescription() {
-        return courseDescription;
-    }
-
-    public void setCourseDescription(String courseDescription) {
-        this.courseDescription = courseDescription;
+    public void setDescription(String courseDescription) {
+        this.description = courseDescription;
     }
 
     @Override
     public String toString() {
         return "Course{" +
-                "courseId='" + courseCode + '\'' +
-                ", courseName='" + courseName + '\'' +
-                ", courseDescription='" + courseDescription + '\'' +
+                "code='" + code + '\'' +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 }

@@ -1,6 +1,6 @@
 package com.codeisright.attendance.service.impl;
 
-import com.codeisright.attendance.data.AClass;
+import com.codeisright.attendance.data.Aclass;
 import com.codeisright.attendance.data.Attendance;
 import com.codeisright.attendance.data.AttendanceMeta;
 import com.codeisright.attendance.data.Student;
@@ -28,7 +28,7 @@ public class CheckinServiceImpl implements CheckinService {
     private final AttendanceMetaRepository attendanceMetaRepository;
 
     @Autowired
-    private CheckinServiceImpl(AClassRepository aClassRepository, StudentRepository studentRepository,
+    public CheckinServiceImpl(AClassRepository aClassRepository, StudentRepository studentRepository,
                                TeacherRepository teacherRepository, CourseRepository courseRepository,
                                AttendanceRepository attendanceRepository,
                                AttendanceMetaRepository attendanceMetaRepository) {
@@ -43,7 +43,7 @@ public class CheckinServiceImpl implements CheckinService {
     @Override
     public List<Attendance> getCheckin(String studentId, String classId) {
         try {
-            return attendanceRepository.findByStudentIdAndClassId(studentId, classId);
+            return attendanceRepository.findByAclass_IdAndStudent_Id(studentId, classId);
         } catch (Exception e) {
             logger.error("Error getting checkin for student: {} in class: {}", studentId, classId, e);
             return null;
@@ -54,7 +54,7 @@ public class CheckinServiceImpl implements CheckinService {
     public Attendance addCheckin(String studentId, String classId, int status, LocalDateTime time) {
         Student student = studentRepository.findById(studentId).orElseThrow(() -> new EntityNotFoundException(
                 "Student not found with ID: " + studentId));
-        AClass aClass = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class not " +
+        Aclass aClass = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class not " +
                 "found with ID: " + classId));
         Attendance toAdd = new Attendance(student, aClass, status, time);
         return attendanceRepository.save(toAdd);
@@ -62,7 +62,7 @@ public class CheckinServiceImpl implements CheckinService {
 
     @Override
     public Attendance forwardCheckin(String studentId, String classId, LocalDateTime time) {
-        List<Attendance> records = attendanceRepository.findByStudentIdAndClassId(studentId, classId);
+        List<Attendance> records = attendanceRepository.findByAclass_IdAndStudent_Id(studentId, classId);
         Attendance recordToForward = records.stream().filter(record -> record.getTime().isBefore(time)).findFirst()
                 .orElse(null);
         if (recordToForward == null) {
@@ -76,9 +76,9 @@ public class CheckinServiceImpl implements CheckinService {
 
     @Override
     public boolean deleteStudentClassIdCheckin(String studentId, String classId) {
-        attendanceRepository.deleteById(attendanceRepository.findByStudentIdAndClassId(studentId, classId).get(0)
+        attendanceRepository.deleteById(attendanceRepository.findByAclass_IdAndStudent_Id(studentId, classId).get(0)
                 .getId());
-        if (attendanceRepository.findByStudentIdAndClassId(studentId, classId).size() != 0) {
+        if (attendanceRepository.findByAclass_IdAndStudent_Id(studentId, classId).size() != 0) {
             logger.error("Error deleting checkin for student: {} in class: {}", studentId, classId);
             return false;
         }
@@ -87,12 +87,12 @@ public class CheckinServiceImpl implements CheckinService {
 
     @Override
     public List<Attendance> getCheckinByClass(String classId, LocalDateTime startTime, LocalDateTime endTime) {
-        return attendanceRepository.findByClassIdAndTimeBetween(classId, startTime, endTime);
+        return attendanceRepository.findByAclass_IdAndTimeBetween(classId, startTime, endTime);
     }
 
     @Override
     public List<Attendance> getCheckinByStudent(String studentId, LocalDateTime startTime, LocalDateTime endTime) {
-        return attendanceRepository.findByStudentIdAndTimeBetween(studentId, startTime, endTime);
+        return attendanceRepository.findByStudent_IdAndTimeBetween(studentId, startTime, endTime);
     }
 
     @Override
@@ -100,7 +100,7 @@ public class CheckinServiceImpl implements CheckinService {
         /*
         在这里只检查时间，QR，code和地点以及课程是否匹配的检查在controller里面做，
          */
-        AttendanceMeta latest_record = attendanceMetaRepository.findFirstByStudentIdAndClassIdOrderByTimeDesc
+        AttendanceMeta latest_record = attendanceMetaRepository.findFirstByIdAndIdOrderByStartDesc
                 (studentId, classId);
         if (latest_record == null) {
             return false;

@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 public class Attendance {
 
     @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy= GenerationType.AUTO)
     private String id;
 
     @ManyToOne
@@ -17,7 +17,7 @@ public class Attendance {
 
     @ManyToOne
     @JoinColumn(name="classId")
-    private AClass aClass;
+    private Aclass aclass;
 
     private int status;
 
@@ -25,9 +25,9 @@ public class Attendance {
 
     protected Attendance() {}
 
-    public Attendance(Student student, AClass aClass, int status, LocalDateTime time) {
+    public Attendance(Student student, Aclass aClass, int status, LocalDateTime time) {
         this.student = student;
-        this.aClass = aClass;
+        this.aclass = aClass;
         this.status = status;
         assert this.status <= 3;
         this.time = time;
@@ -49,12 +49,12 @@ public class Attendance {
         this.student = student;
     }
 
-    public AClass getAClass() {
-        return aClass;
+    public Aclass getAClass() {
+        return aclass;
     }
 
-    public void setAClass(AClass aClass) {
-        this.aClass = aClass;
+    public void setAClass(Aclass aClass) {
+        this.aclass = aClass;
     }
 
     public int getStatus() {
@@ -82,7 +82,7 @@ public class Attendance {
         return "Attendance{" +
                 "id='" + id + '\'' +
                 ", student=" + student +
-                ", class=" + aClass +
+                ", class=" + aclass +
                 ", status='" + status + '\'' +
                 ", time=" + time +
                 '}';

@@ -24,7 +24,7 @@ public class ModifyServiceImpl implements ModifyService {
     private final AttendanceMetaRepository attendanceMetaRepository;
 
     @Autowired
-    private ModifyServiceImpl(AClassRepository aClassRepository, StudentRepository studentRepository,
+    public ModifyServiceImpl(AClassRepository aClassRepository, StudentRepository studentRepository,
                               TeacherRepository teacherRepository, CourseRepository courseRepository,
                               AttendanceRepository attendanceRepository,
                               AttendanceMetaRepository attendanceMetaRepository) {
@@ -42,7 +42,7 @@ public class ModifyServiceImpl implements ModifyService {
                 " found with ID: " + courseId));
         Teacher teacher = teacherRepository.findById(teacherId).orElseThrow(() -> new EntityNotFoundException(
                 "Teacher not found with ID: " + teacherId));
-        String classId = aClassRepository.save(new AClass(title, description, grade, course, teacher)).getId();
+        String classId = aClassRepository.save(new Aclass(title, description, grade, course, teacher)).getId();
         if (classId == null) {
             logger.error("Error adding class with title: {}", title);
             return false;
@@ -64,7 +64,8 @@ public class ModifyServiceImpl implements ModifyService {
     }
 
     @Override
-    public boolean addTeacher(String teacherId, String teacherName, int age, String gender, String department, String password) {
+    public boolean addTeacher(String teacherId, String teacherName, int age, String gender, String department,
+                              String password) {
         String id = teacherRepository.save(new Teacher(teacherId, teacherName, age, gender, department, password)).getId();
         if (id == null) {
             logger.error("Error adding teacher with name: {}", teacherName);
@@ -77,7 +78,7 @@ public class ModifyServiceImpl implements ModifyService {
     @Override
     public boolean announceAttendance(int requirement, LocalDateTime startTime, LocalDateTime deadline,
                                       String classId) {
-        AClass aClass = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class " +
+        Aclass aClass = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class " +
                 "not found with ID: " + classId));
         String id = attendanceMetaRepository.save(new AttendanceMeta(requirement, startTime, deadline, aClass)).getId();
         if (id == null) {
@@ -90,10 +91,10 @@ public class ModifyServiceImpl implements ModifyService {
 
     @Override
     public boolean deleteClass(String classId) {
-        AClass toDelete = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class" +
+        Aclass toDelete = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class" +
                 " not found with ID: " + classId));
         aClassRepository.delete(toDelete);
-        AClass result = aClassRepository.findById(classId).orElse(null);
+        Aclass result = aClassRepository.findById(classId).orElse(null);
         if (result != null) {
             logger.error("Error deleting class with ID: {}", classId);
             return false;
@@ -146,7 +147,7 @@ public class ModifyServiceImpl implements ModifyService {
 
     @Override
     public boolean modifyClass(String classId, String title, int grade) {
-        AClass toModify = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class" +
+        Aclass toModify = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class" +
                 " not found with ID: " + classId));
         String originalTitle = toModify.getTitle();
         int originalGrade = toModify.getGrade();
@@ -164,10 +165,10 @@ public class ModifyServiceImpl implements ModifyService {
     @Override
     public boolean modifyCourse(String courseName, String courseCode) {
         Course toModify = courseRepository.findByName(courseName);
-        String originalCode = toModify.getCourseCode();
-        toModify.setCourseCode(courseCode);
+        String originalCode = toModify.getCode();
+        toModify.setCode(courseCode);
         courseRepository.save(toModify);
-        if (toModify.getCourseCode().equals(originalCode)) {
+        if (toModify.getCode().equals(originalCode)) {
             logger.error("Error modifying course code of name: {}", courseName);
             return false;
         }

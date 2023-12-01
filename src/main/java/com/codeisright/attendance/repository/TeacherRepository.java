@@ -8,5 +8,5 @@ import java.util.List;
 public interface TeacherRepository extends JpaRepository<Teacher, String> {
     List<Teacher> findByDepartment(String department);
 
-    Teacher findByTeacherName(String teacherName);
+    Teacher findByName(String teacherName);
 }

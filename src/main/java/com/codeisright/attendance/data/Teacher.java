@@ -6,11 +6,11 @@ import jakarta.persistence.*;
 public class Teacher {
 
     @Id
-    private String teacherId;
+    private String id;
 
-    private String teacherName;
+    private String name;
 
-    private String codedPassword;
+    private String codedpassword;
 
     private int age;
 
@@ -21,28 +21,28 @@ public class Teacher {
     protected Teacher() {}
 
     public Teacher(String teacherId, String teacherName, int age, String gender, String department, String codedPassword) {
-        this.teacherId = teacherId;
-        this.teacherName = teacherName;
+        this.id = teacherId;
+        this.name = teacherName;
         this.age = age;
         this.gender = gender;
         this.department = department;
-        this.codedPassword = codedPassword;
+        this.codedpassword = codedPassword;
     }
 
     public String getId() {
-        return teacherId;
+        return id;
     }
 
     public void setId(String teaId) {
-        this.teacherId = teaId;
+        this.id = teaId;
     }
 
     public String getName() {
-        return teacherName;
+        return name;
     }
 
     public void setName(String teaName) {
-        this.teacherName = teaName;
+        this.name = teaName;
     }
 
     public String getDepartment() {
@@ -69,20 +69,20 @@ public class Teacher {
         this.gender = gender;
     }
 
-    public String getCodedPassword() {
-        return codedPassword;
+    public String getCodedpassword() {
+        return codedpassword;
     }
 
-    public void setCodedPassword(String codedPassword) {
-        this.codedPassword = codedPassword;
+    public void setCodedpassword(String codedPassword) {
+        this.codedpassword = codedPassword;
     }
 
     @Override
     public String toString() {
         return "Teacher{" +
-                "teacherId='" + teacherId + '\'' +
-                ", teacherName='" + teacherName + '\'' +
-                ", codedPassword='" + codedPassword + '\'' +
+                "teacherId='" + id + '\'' +
+                ", teacherName='" + name + '\'' +
+                ", codedPassword='" + codedpassword + '\'' +
                 ", age=" + age +
                 ", gender='" + gender + '\'' +
                 ", department='" + department + '\'' +

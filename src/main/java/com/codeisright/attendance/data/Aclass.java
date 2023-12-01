@@ -3,10 +3,10 @@ package com.codeisright.attendance.data;
 import jakarta.persistence.*;
 
 @Entity
-public class AClass {
+public class Aclass {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String classId;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private String id;
 
     private String title;
 
@@ -22,9 +22,9 @@ public class AClass {
     @JoinColumn(name="teacherId")
     private Teacher teacher;
 
-    protected AClass() {}
+    protected Aclass() {}
 
-    public AClass(String title, String description, int grade, Course course, Teacher teacher) {
+    public Aclass(String title, String description, int grade, Course course, Teacher teacher) {
         this.title = title;
         this.description = description;
         this.grade = grade;
@@ -33,11 +33,11 @@ public class AClass {
     }
 
     public String getId() {
-        return classId;
+        return id;
     }
 
     public void setId(String classId) {
-        this.classId = classId;
+        this.id = classId;
     }
 
     public String getTitle() {
@@ -82,8 +82,8 @@ public class AClass {
 
     @Override
     public String toString() {
-        return "AClass{" +
-                "classId='" + classId + '\'' +
+        return "Aclass{" +
+                "classId='" + id + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
                 ", grade=" + grade +

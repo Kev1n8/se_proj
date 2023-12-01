@@ -9,27 +9,27 @@ import java.time.LocalDateTime;
 public class AttendanceMeta {
     @Id
     @GeneratedValue(generator = "random-id")
-    @GenericGenerator(name = "random-id", strategy = "com.codeisright.attendance.util.RandomIdGenerator")
+    @GenericGenerator(name = "random-id", strategy = "com.codeisright.attendance.utils.RandomIdGenerator")
     private String id;
 
     private int requirement; // 1, 2, 3 mapping by code, by location and by QR
 
-    private LocalDateTime startTime;
+    private LocalDateTime start;
 
     private LocalDateTime deadline;
 
     @ManyToOne
     @JoinColumn(name = "classId")
-    private AClass aClass;
+    private Aclass aclass;
 
     protected AttendanceMeta() {
     }
 
-    public AttendanceMeta(int requirement, LocalDateTime startTime, LocalDateTime deadline, AClass aClass) {
+    public AttendanceMeta(int requirement, LocalDateTime start, LocalDateTime deadline, Aclass aclass) {
         this.requirement = requirement;
-        this.startTime = startTime;
+        this.start = start;
         this.deadline = deadline;
-        this.aClass = aClass;
+        this.aclass = aclass;
     }
 
     public String getId() {
@@ -48,12 +48,12 @@ public class AttendanceMeta {
         this.requirement = requirement;
     }
 
-    public LocalDateTime getStartTime() {
-        return startTime;
+    public LocalDateTime getStart() {
+        return start;
     }
 
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
+    public void setStart(LocalDateTime startTime) {
+        this.start = startTime;
     }
 
     public LocalDateTime getDeadline() {
@@ -64,12 +64,12 @@ public class AttendanceMeta {
         this.deadline = deadline;
     }
 
-    public AClass getaClass() {
-        return aClass;
+    public Aclass getaAclass() {
+        return aclass;
     }
 
-    public void setaClass(AClass aClass) {
-        this.aClass = aClass;
+    public void setaAclass(Aclass aClass) {
+        this.aclass = aClass;
     }
 
     @Override
@@ -77,9 +77,9 @@ public class AttendanceMeta {
         return "AttendanceMeta{" +
                 "id='" + id + '\'' +
                 ", requirement=" + requirement +
-                ", startTime=" + startTime +
+                ", startTime=" + start +
                 ", deadline=" + deadline +
-                ", aClass=" + aClass +
+                ", aClass=" + aclass +
                 '}';
     }
 }

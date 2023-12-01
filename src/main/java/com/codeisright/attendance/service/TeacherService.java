@@ -4,9 +4,6 @@ import com.codeisright.attendance.data.Teacher;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,22 +12,23 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class TeacherService {
-    private TeacherRepository teacherRepository;
-    private PasswordEncoder passwordEncoder;
-
-    @Configuration
-    class PasswordEncoder {
-        @Bean
-        public BCryptPasswordEncoder bCryptPasswordEncoder() {
-            return new BCryptPasswordEncoder();
-        }
-    }
-
     @Autowired
-    public TeacherService(TeacherRepository teacherRepository, PasswordEncoder passwordEncoder) {
-        this.teacherRepository = teacherRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
+    private TeacherRepository teacherRepository;
+//    private PasswordEncoder passwordEncoder;
+
+//    @Configuration
+//    class PasswordEncoder {
+//        @Bean
+//        public BCryptPasswordEncoder bCryptPasswordEncoder() {
+//            return new BCryptPasswordEncoder();
+//        }
+//    }
+
+//    @Autowired
+//    public TeacherService(TeacherRepository teacherRepository, PasswordEncoder passwordEncoder) {
+//        this.teacherRepository = teacherRepository;
+//        this.passwordEncoder = passwordEncoder;
+//    }
 
     public List<Teacher> getAllTeachers() {
         return teacherRepository.findAll();
@@ -75,7 +73,7 @@ public class TeacherService {
         if (teacher == null) {
             return null;
         }
-        if (password.matches(teacher.getCodedPassword())) {
+        if (password.matches(teacher.getCodedpassword())) {
             return teacher;
         }
         return null;

@@ -7,9 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AttendanceMetaRepository extends JpaRepository<AttendanceMeta, String> {
-    List<AttendanceMetaRepository> findPublishedByDeadline(LocalDateTime deadline);
+    List<AttendanceMetaRepository> findAttendanceMetasByDeadlineBefore(LocalDateTime ddl);
 
-    AttendanceMeta findPublishedById(String Id);
-
-    AttendanceMeta findFirstByStudentIdAndClassIdOrderByTimeDesc(String studentId, String classId);
+    AttendanceMeta findFirstByIdAndIdOrderByStartDesc(String studentId, String classId);
 }
