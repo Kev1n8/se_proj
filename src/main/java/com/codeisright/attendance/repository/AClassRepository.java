@@ -10,4 +10,6 @@ public interface AClassRepository extends JpaRepository<Aclass, String> {
     List<Aclass> findAClassByTitle(String title);
 
     List<Aclass> findAClassByGrade(int grade);
+
+    List<Aclass> findByTeacherId(String teacherId);
 }

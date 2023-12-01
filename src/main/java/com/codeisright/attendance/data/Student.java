@@ -7,6 +7,8 @@ public class Student {
 
     @Id
     private String id;
+
+    private String codedpassword;
     private String name;
     private int age;
     private String gender;
@@ -14,13 +16,14 @@ public class Student {
     private String theclass;
     protected Student() {}
 
-    public Student(String id, String studentName, int age, String gender, String major, String studentClass) {
+    public Student(String id, String studentName, String codedpassword, int age, String gender, String major, String studentClass) {
         this.id = id;
         this.name = studentName;
         this.age = age;
         this.gender = gender;
         this.major = major;
         this.theclass = studentClass;
+        this.codedpassword = codedpassword;
     }
 
     public String getId() {
@@ -29,6 +32,14 @@ public class Student {
 
     public void setId(String stuId) {
         this.id = stuId;
+    }
+
+    public String getCodedpassword() {
+        return codedpassword;
+    }
+
+    public void setCodedpassword(String codedpassword) {
+        this.codedpassword = codedpassword;
     }
 
     public String getName() {

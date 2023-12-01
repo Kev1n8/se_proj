@@ -82,7 +82,6 @@ public class Teacher {
         return "Teacher{" +
                 "teacherId='" + id + '\'' +
                 ", teacherName='" + name + '\'' +
-                ", codedPassword='" + codedpassword + '\'' +
                 ", age=" + age +
                 ", gender='" + gender + '\'' +
                 ", department='" + department + '\'' +

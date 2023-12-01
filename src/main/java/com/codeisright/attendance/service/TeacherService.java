@@ -1,19 +1,32 @@
 package com.codeisright.attendance.service;
 
-import com.codeisright.attendance.data.Teacher;
+import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
-import com.codeisright.attendance.repository.TeacherRepository;
+import com.codeisright.attendance.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class TeacherService {
+    private final TeacherRepository teacherRepository;
+    private final AClassRepository aclassRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final StudentRepository studentRepository;
+    private final AttendanceRepository attendanceRepository;
+
     @Autowired
-    private TeacherRepository teacherRepository;
+    public TeacherService(TeacherRepository teacherRepository, AClassRepository aclassRepository, EnrollmentRepository enrollmentRepository, StudentRepository studentRepository, AttendanceRepository attendanceRepository){
+        this.teacherRepository = teacherRepository;
+        this.aclassRepository = aclassRepository;
+        this.enrollmentRepository = enrollmentRepository;
+        this.studentRepository = studentRepository;
+        this.attendanceRepository = attendanceRepository;
+    }
 //    private PasswordEncoder passwordEncoder;
 
 //    @Configuration
@@ -77,5 +90,26 @@ public class TeacherService {
             return teacher;
         }
         return null;
+    }
+
+    public List<Aclass> getClasses(String id) {
+        return aclassRepository.findByTeacherId(id);
+    }
+
+    public Aclass getClass(String id) {
+        return aclassRepository.findById(id).orElse(null);
+    }
+
+    public List<Student> getClassStudents(String classId) {
+        List<Enrollment> lis =  enrollmentRepository.findStudentByAclass_Id(classId);
+        List<Student> students = new ArrayList<>();
+        for (Enrollment e : lis) {
+            students.add(studentRepository.findById(e.getStudent().getId()).orElse(null));
+        }
+        return students;
+    }
+
+    public Student getStudentInfo(String studentId) {
+        return studentRepository.findById(studentId).orElse(null);
     }
 }
