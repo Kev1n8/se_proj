@@ -10,4 +10,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, String> 
     List<Enrollment> findStudentByAclass_Id(String classId);
 
     List<Enrollment> findAclassByStudent_Id(String studentId);
+
+    Enrollment findByAclass_IdAndStudent_Id(String classId, String studentId);
 }

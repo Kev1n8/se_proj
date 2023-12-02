@@ -64,11 +64,11 @@ public class AttendanceMeta {
         this.deadline = deadline;
     }
 
-    public Aclass getaAclass() {
+    public Aclass getAclass() {
         return aclass;
     }
 
-    public void setaAclass(Aclass aClass) {
+    public void setAclass(Aclass aClass) {
         this.aclass = aClass;
     }
 

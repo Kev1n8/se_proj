@@ -3,9 +3,6 @@ package com.codeisright.attendance.cache;
 
 import com.codeisright.attendance.data.Student;
 import com.codeisright.attendance.data.Teacher;
-import com.codeisright.attendance.utils.ImageHadler;
-
-import java.awt.*;
 
 public class UserProfile {
     private String id;
@@ -24,9 +21,6 @@ public class UserProfile {
 
     private String role;
 
-    private ImageHadler image;
-
-    private Image content;
 
     public UserProfile() {
         this.id = "";
@@ -37,8 +31,6 @@ public class UserProfile {
         this.major = "";
         this.theclass = "";
         this.role = "";
-        this.image = new ImageHadler(id);
-        this.content = null;
     }
 
     public UserProfile(String id, String name, int age, String gender, String department, String major, String theclass,
@@ -51,8 +43,6 @@ public class UserProfile {
         this.major = major;
         this.theclass = theclass;
         this.role = role;
-        this.image = new ImageHadler(id);
-        this.content = this.image.getImage();
     }
 
     public String getId() {
@@ -115,26 +105,20 @@ public class UserProfile {
         this.role = role;
     }
 
-    public ImageHadler getImage() {
-        return image;
+    public String getRole() {
+        return role;
     }
 
-    public void setImage(ImageHadler image) {
-        this.image = image;
-    }
-
-    public void setTeacher(Teacher teacher){
+    public void setTeacher(Teacher teacher) {
         this.gender = teacher.getGender();
         this.age = teacher.getAge();
         this.department = teacher.getDepartment();
         this.name = teacher.getName();
         this.id = teacher.getId();
         this.role = "teacher";
-        this.image.setId(id);
-        this.content = this.image.getImage();
     }
 
-    public void setStudent(Student student){
+    public void setStudent(Student student) {
         this.gender = student.getGender();
         this.age = student.getAge();
         this.major = student.getMajor();
@@ -142,8 +126,6 @@ public class UserProfile {
         this.name = student.getName();
         this.id = student.getId();
         this.role = "student";
-        this.image.setId(id);
-        this.content = this.image.getImage();
     }
 
     @Override
@@ -152,12 +134,11 @@ public class UserProfile {
                 "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", age=" + age +
-                ", gender=" + gender +
+                ", gender='" + gender + '\'' +
                 ", department='" + department + '\'' +
                 ", major='" + major + '\'' +
                 ", theclass='" + theclass + '\'' +
-                ", role=" + role +
-                ", image=" + image +
+                ", role='" + role + '\'' +
                 '}';
     }
 }

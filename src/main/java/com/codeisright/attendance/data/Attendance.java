@@ -19,6 +19,9 @@ public class Attendance {
     @JoinColumn(name="classId")
     private Aclass aclass;
 
+    @ManyToOne
+    @JoinColumn(name="metaId")
+    private AttendanceMeta meta;
     private int status;
 
     private LocalDateTime time;

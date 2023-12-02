@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 public class Enrollment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private String id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name="studentId")
@@ -23,11 +23,11 @@ public class Enrollment {
         this.aclass = aclass;
     }
 
-    public String getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
