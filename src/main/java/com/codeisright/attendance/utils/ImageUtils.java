@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ImageUtils {
-
+    private static final Logger logger = LoggerFactory.getLogger(ImageUtils.class);
     public static String getBase64Image(byte[] image) {
         return Base64.getEncoder().encodeToString(image);
     }
@@ -24,7 +26,7 @@ public class ImageUtils {
         try {
             return Files.readAllBytes(Paths.get(path));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to read image from path: " + path, e);
         }
         return null;
     }
