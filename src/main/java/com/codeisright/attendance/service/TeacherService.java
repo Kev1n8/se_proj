@@ -18,14 +18,14 @@ import java.util.List;
 public class TeacherService {
     private static final Logger logger = LoggerFactory.getLogger(TeacherService.class);
     private final TeacherRepository teacherRepository;
-    private final AClassRepository aclassRepository;
+    private final AclassRepository aclassRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final StudentRepository studentRepository;
     private final AttendanceRepository attendanceRepository;
     private final AttendanceMetaRepository attendanceMetaRepository;
 
     @Autowired
-    public TeacherService(TeacherRepository teacherRepository, AClassRepository aclassRepository,
+    public TeacherService(TeacherRepository teacherRepository, AclassRepository aclassRepository,
                           EnrollmentRepository enrollmentRepository, StudentRepository studentRepository,
                           AttendanceRepository attendanceRepository, AttendanceMetaRepository attendanceMetaRepository) {
         this.teacherRepository = teacherRepository;
@@ -37,7 +37,7 @@ public class TeacherService {
     }
 //    private PasswordEncoder passwordEncoder;
 
-//    @Configuration
+//    @ApplicationSecurity
 //    class PasswordEncoder {
 //        @Bean
 //        public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -66,8 +66,8 @@ public class TeacherService {
 
     public Teacher updateTeacher(Teacher teacher) {
         Teacher existingTeacher =
-                teacherRepository.findById(teacher.getId()).orElseThrow(() -> new EntityNotFoundException("Teacher " +
-                        "not found with ID: " + teacher.getId()));
+                teacherRepository.findById(teacher.getUsername()).orElseThrow(() -> new EntityNotFoundException("Teacher " +
+                        "not found with ID: " + teacher.getUsername()));
         existingTeacher.setName(teacher.getName());
         existingTeacher.setAge(teacher.getAge());
         existingTeacher.setGender(teacher.getGender());
@@ -103,7 +103,7 @@ public class TeacherService {
             logger.info("Teacher not found with ID: " + teacherId);
             return null;
         }
-        if (password.matches(teacher.getCodedpassword())) {
+        if (password.matches(teacher.getPassword())) {
             logger.info("Teacher logged in: " + teacher);
             return teacher;
         }
@@ -123,7 +123,7 @@ public class TeacherService {
         List<Enrollment> lis = enrollmentRepository.findStudentByAclass_Id(classId);
         List<Student> students = new ArrayList<>();
         for (Enrollment e : lis) {
-            students.add(studentRepository.findById(e.getStudent().getId()).orElse(null));
+            students.add(studentRepository.findById(e.getStudent().getUsername()).orElse(null));
         }
         return students;
     }
@@ -151,7 +151,7 @@ public class TeacherService {
         int requirement = getAttendanceMeta(metaId).getRequirement();
         for (Attendance a : records) {
             if (a.getStatus()==requirement) {
-                students.add(studentRepository.findById(a.getStudent().getId()).orElse(null));
+                students.add(studentRepository.findById(a.getStudent().getUsername()).orElse(null));
             }
         }
         return students;
