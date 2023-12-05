@@ -1,9 +1,13 @@
 package com.codeisright.attendance.data;
 
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Collection;
 
 @Entity
-public class Student {
+public class Student implements UserDetails {
 
     @Id
     private String id;
@@ -25,11 +29,6 @@ public class Student {
         this.theclass = studentClass;
         this.codedpassword = codedpassword;
     }
-
-    public String getId() {
-        return id;
-    }
-
     public void setId(String stuId) {
         this.id = stuId;
     }
@@ -92,5 +91,40 @@ public class Student {
                 ", major='" + major + '\'' +
                 ", studentClass='" + theclass + '\'' +
                 '}';
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return null;
+    }
+
+    @Override
+    public String getPassword() {
+        return this.codedpassword;
+    }
+
+    @Override
+    public String getUsername() {
+        return this.id;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
     }
 }

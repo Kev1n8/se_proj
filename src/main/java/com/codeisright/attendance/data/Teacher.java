@@ -26,11 +26,16 @@ public class Teacher implements UserDetails {
 
     private String department;
 
-    private String role;
+    private String role = "ROLE_TEACHER";
 
     private boolean isExpired;
 
     protected Teacher() {}
+
+    public Teacher(String id, String codedpassword) {
+        this.id = id;
+        this.codedpassword = codedpassword;
+    }
 
     public Teacher(String teacherId, String teacherName, int age, String gender, String department, String codedPassword) {
         this.id = teacherId;
@@ -39,7 +44,6 @@ public class Teacher implements UserDetails {
         this.gender = gender;
         this.department = department;
         this.codedpassword = codedPassword;
-        this.role = "ROLE_TEACHER";
         this.isExpired = false;
     }
 
