@@ -19,8 +19,8 @@ import java.util.List;
 @Service
 @Transactional(rollbackFor = Exception.class)
 public class CheckinServiceImpl implements CheckinService {
-    private static final Logger logger = LoggerFactory.getLogger(ModifyServiceImpl.class);
-    private final AClassRepository aClassRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CheckinService.class);
+    private final AclassRepository aClassRepository;
     private final StudentRepository studentRepository;
     private final TeacherRepository teacherRepository;
     private final CourseRepository courseRepository;
@@ -28,10 +28,10 @@ public class CheckinServiceImpl implements CheckinService {
     private final AttendanceMetaRepository attendanceMetaRepository;
 
     @Autowired
-    public CheckinServiceImpl(AClassRepository aClassRepository, StudentRepository studentRepository,
-                               TeacherRepository teacherRepository, CourseRepository courseRepository,
-                               AttendanceRepository attendanceRepository,
-                               AttendanceMetaRepository attendanceMetaRepository) {
+    public CheckinServiceImpl(AclassRepository aClassRepository, StudentRepository studentRepository,
+                              TeacherRepository teacherRepository, CourseRepository courseRepository,
+                              AttendanceRepository attendanceRepository,
+                              AttendanceMetaRepository attendanceMetaRepository) {
         this.aClassRepository = aClassRepository;
         this.studentRepository = studentRepository;
         this.teacherRepository = teacherRepository;
@@ -51,12 +51,13 @@ public class CheckinServiceImpl implements CheckinService {
     }
 
     @Override
-    public Attendance addCheckin(String studentId, String classId, int status, LocalDateTime time) {
+    public Attendance addCheckin(String studentId, String classId, int status, LocalDateTime time, Long latitude,
+                                 Long longitude) {
         Student student = studentRepository.findById(studentId).orElseThrow(() -> new EntityNotFoundException(
                 "Student not found with ID: " + studentId));
         Aclass aClass = aClassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Class not " +
                 "found with ID: " + classId));
-        Attendance toAdd = new Attendance(student, aClass, status, time);
+        Attendance toAdd = new Attendance(student, aClass, status, time, latitude, longitude);
         return attendanceRepository.save(toAdd);
     }
 
@@ -109,13 +110,13 @@ public class CheckinServiceImpl implements CheckinService {
         return latest_time.isAfter(time);
     }
 
-    public void doCheckin(String studentId, String classId, int status) {
+    public void doCheckin(String studentId, String classId, int status, Long latitude, Long longitude) {
         LocalDateTime time = LocalDateTime.now();
         if (!canCheckin(studentId, classId, time)) {
             throw new RuntimeException("Cannot checkin. Teacher has not started the class yet or has ended the " +
                     "class.");
         }
-        addCheckin(studentId, classId, status, time);
+        addCheckin(studentId, classId, status, time, latitude, longitude);
         logger.info("Student: {} checked in for class: {}", studentId, classId);
     }
 

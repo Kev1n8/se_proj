@@ -8,7 +8,8 @@ import java.util.List;
 public interface CheckinService {
     List<Attendance> getCheckin(String studentId, String classId);
 
-    Attendance addCheckin(String studentId, String classId, int status, LocalDateTime time);
+    Attendance addCheckin(String studentId, String classId, int status, LocalDateTime time, Long latitude,
+                          Long longitude);
 
     Attendance forwardCheckin(String studentId, String classId, LocalDateTime time);
 

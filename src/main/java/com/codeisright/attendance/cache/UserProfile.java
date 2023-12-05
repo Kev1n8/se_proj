@@ -114,7 +114,7 @@ public class UserProfile {
         this.age = teacher.getAge();
         this.department = teacher.getDepartment();
         this.name = teacher.getName();
-        this.id = teacher.getId();
+        this.id = teacher.getUsername();
         this.role = "teacher";
     }
 
@@ -124,7 +124,7 @@ public class UserProfile {
         this.major = student.getMajor();
         this.theclass = student.getTheclass();
         this.name = student.getName();
-        this.id = student.getId();
+        this.id = student.getUsername();
         this.role = "student";
     }
 
