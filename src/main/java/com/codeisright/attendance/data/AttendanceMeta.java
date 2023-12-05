@@ -18,6 +18,10 @@ public class AttendanceMeta {
 
     private LocalDateTime deadline;
 
+    private Long latitude;
+
+    private Long longitude;
+
     @ManyToOne
     @JoinColumn(name = "classId")
     private Aclass aclass;
@@ -25,11 +29,12 @@ public class AttendanceMeta {
     protected AttendanceMeta() {
     }
 
-    public AttendanceMeta(int requirement, LocalDateTime start, LocalDateTime deadline, Aclass aclass) {
+    public AttendanceMeta(int requirement, LocalDateTime start, LocalDateTime deadline, Aclass aclass, Long latitude, Long longitude) {
         this.requirement = requirement;
         this.start = start;
         this.deadline = deadline;
         this.aclass = aclass;
+        this.latitude = latitude;
     }
 
     public String getId() {
@@ -72,14 +77,32 @@ public class AttendanceMeta {
         this.aclass = aClass;
     }
 
+    public Long getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Long latitude) {
+        this.latitude = latitude;
+    }
+
+    public Long getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Long longitude) {
+        this.longitude = longitude;
+    }
+
     @Override
     public String toString() {
         return "AttendanceMeta{" +
                 "id='" + id + '\'' +
                 ", requirement=" + requirement +
-                ", startTime=" + start +
+                ", start=" + start +
                 ", deadline=" + deadline +
-                ", aClass=" + aclass +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                ", aclass=" + aclass +
                 '}';
     }
 }

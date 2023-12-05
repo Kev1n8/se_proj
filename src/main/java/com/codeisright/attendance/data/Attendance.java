@@ -26,14 +26,20 @@ public class Attendance {
 
     private LocalDateTime time;
 
+    private Long latitude;
+
+    private Long longitude;
+
     protected Attendance() {}
 
-    public Attendance(Student student, Aclass aClass, int status, LocalDateTime time) {
+    public Attendance(Student student, Aclass aClass, int status, LocalDateTime time, Long latitude, Long longitude) {
         this.student = student;
         this.aclass = aClass;
         this.status = status;
         assert this.status <= 3;
         this.time = time;
+        this.latitude = latitude;
+        this.longitude = longitude;
     }
 
     public String getId() {
