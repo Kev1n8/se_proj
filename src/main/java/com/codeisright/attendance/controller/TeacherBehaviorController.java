@@ -55,6 +55,40 @@ public class TeacherBehaviorController {
                 .body(resource);
     }
 
+    @PostMapping("/setAvatar")
+    public String setTeacherAvatar(@PathVariable String id, @RequestParam("avatar") MultipartFile avatar) {
+        try {
+            teacherService.saveAvatar(id, avatar.getBytes());
+        }catch (Exception e){
+            return "redirect:/uploadFailure";
+
+        }
+        return "redirect:/uploadSuccess";
+    }
+
+    @GetMapping("/student/{studentId}/avatar")
+    public ResponseEntity<Resource> getStudentAvatar(@PathVariable String studentId) {
+        byte[] avatarBytes = teacherService.getProfileAvatar(studentId);
+
+        if (avatarBytes == null || avatarBytes.length == 0) {
+            // 如果没有头像数据，你可能需要返回一个默认图像或者空响应
+            return ResponseEntity.noContent().build();
+        }
+
+        ByteArrayResource resource = new ByteArrayResource(avatarBytes);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(resource.contentLength());
+
+        // 根据实际的图像类型设置Content-type
+        // 这里简单演示，你可能需要根据实际情况从数据库或文件名中获取图像类型
+        headers.setContentType(MediaType.IMAGE_JPEG);
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
+    }
+
     @GetMapping("/classes")
     public List<Aclass> getTeacherClasses(@PathVariable String id) {
         return teacherService.getClasses(id);
