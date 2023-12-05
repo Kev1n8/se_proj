@@ -16,4 +16,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, String> 
     List<Attendance> findByAclass_Id(String classId);
 
     List<Attendance> findByAclass_IdAndMeta_Id(String classId, String metaId);
+
+    List<Attendance> findByStudent_Id(String studentId);
+
+    Attendance findByStudent_IdAndMeta_Id(String studentId, String metaId);
 }
