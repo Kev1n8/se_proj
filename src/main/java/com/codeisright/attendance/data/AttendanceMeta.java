@@ -1,15 +1,12 @@
 package com.codeisright.attendance.data;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 
 @Entity
 public class AttendanceMeta {
     @Id
-    @GeneratedValue(generator = "random-id")
-    @GenericGenerator(name = "random-id", strategy = "com.codeisright.attendance.utils.RandomIdGenerator")
     private String id;
 
     private int requirement; // 1, 2, 3 mapping by code, by location and by QR
