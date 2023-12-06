@@ -9,11 +9,11 @@ public class UserDto {
         this.password = password;
     }
 
-    public String getId() {
+    public String getUsername() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setUsername(String id) {
         this.id = id;
     }
 
