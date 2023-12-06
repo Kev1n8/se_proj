@@ -45,23 +45,30 @@ public class ApplicationSecurity extends SecurityConfigurerAdapter<DefaultSecuri
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
+        //TODO: make sure the security and the Controllers working together
+        http
+                .csrf(Customizer.withDefaults())
+                .authorizeHttpRequests(authorize -> authorize
+                        .anyRequest().authenticated()
+                )
+                .httpBasic(Customizer.withDefaults())
+                .formLogin(Customizer.withDefaults());
 //                .authorizeHttpRequests(authorize -> authorize
-//                        .requestMatchers("/register", "/login", "/logout").permitAll()
+//                        .requestMatchers("/auth").permitAll()
 //                        .anyRequest().authenticated()
 //                ).httpBasic(Customizer.withDefaults());
-        http.formLogin(form -> form
-                .loginPage("/login")
-                .permitAll()
-                .defaultSuccessUrl("/hello", true)
-                .failureUrl("/login?error")
-        ).logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/bye")
-        ).authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/register", "/login", "/logout").permitAll()
-                .anyRequest().authenticated()
-        ).csrf(CsrfConfigurer::disable);
+//        http.formLogin(form -> form
+//                .loginPage("/login")
+//                .permitAll()
+//                .defaultSuccessUrl("/hello", true)
+//                .failureUrl("/login?error")
+//        ).logout(logout -> logout
+//                .logoutUrl("/logout")
+//                .logoutSuccessUrl("/bye")
+//        ).authorizeHttpRequests(authorize -> authorize
+//                .requestMatchers("/register", "/login", "/logout").permitAll()
+//                .anyRequest().authenticated()
+//        ).csrf(CsrfConfigurer::disable);
         return http.build();
     }
 }
