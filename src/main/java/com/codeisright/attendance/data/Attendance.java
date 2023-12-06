@@ -74,6 +74,38 @@ public class Attendance {
         this.status = status;
     }
 
+    public Aclass getAclass() {
+        return aclass;
+    }
+
+    public void setAclass(Aclass aclass) {
+        this.aclass = aclass;
+    }
+
+    public AttendanceMeta getMeta() {
+        return meta;
+    }
+
+    public void setMeta(AttendanceMeta meta) {
+        this.meta = meta;
+    }
+
+    public Long getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Long latitude) {
+        this.latitude = latitude;
+    }
+
+    public Long getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Long longitude) {
+        this.longitude = longitude;
+    }
+
     public LocalDateTime getTime() {
         return time;
     }
