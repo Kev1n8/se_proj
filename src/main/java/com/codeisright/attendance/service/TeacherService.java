@@ -3,8 +3,7 @@ package com.codeisright.attendance.service;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.*;
-import com.codeisright.attendance.utils.ImageUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.codeisright.attendance.utils.RandomIdGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -15,74 +14,15 @@ import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class TeacherService {
+public class TeacherService extends UserService {
     private static final Logger logger = LoggerFactory.getLogger(TeacherService.class);
-    private final TeacherRepository teacherRepository;
-    private final AclassRepository aclassRepository;
-    private final EnrollmentRepository enrollmentRepository;
-    private final StudentRepository studentRepository;
-    private final AttendanceRepository attendanceRepository;
-    private final AttendanceMetaRepository attendanceMetaRepository;
 
-    @Autowired
     public TeacherService(TeacherRepository teacherRepository, AclassRepository aclassRepository,
                           EnrollmentRepository enrollmentRepository, StudentRepository studentRepository,
-                          AttendanceRepository attendanceRepository, AttendanceMetaRepository attendanceMetaRepository) {
-        this.teacherRepository = teacherRepository;
-        this.aclassRepository = aclassRepository;
-        this.enrollmentRepository = enrollmentRepository;
-        this.studentRepository = studentRepository;
-        this.attendanceRepository = attendanceRepository;
-        this.attendanceMetaRepository = attendanceMetaRepository;
-    }
-//    private PasswordEncoder passwordEncoder;
-
-//    @ApplicationSecurity
-//    class PasswordEncoder {
-//        @Bean
-//        public BCryptPasswordEncoder bCryptPasswordEncoder() {
-//            return new BCryptPasswordEncoder();
-//        }
-//    }
-
-//    @Autowired
-//    public TeacherService(TeacherRepository teacherRepository, PasswordEncoder passwordEncoder) {
-//        this.teacherRepository = teacherRepository;
-//        this.passwordEncoder = passwordEncoder;
-//    }
-
-    public List<Teacher> getAllTeachers() {
-        return teacherRepository.findAll();
-    }
-
-    public Teacher getTeacherById(String id) {
-        return teacherRepository.findById(id).orElse(null);
-    }
-
-    public Teacher addTeacher(Teacher teacher) {
-        logger.info("Teacher added: " + teacher);
-        return teacherRepository.save(teacher);
-    }
-
-    public Teacher updateTeacher(Teacher teacher) {
-        Teacher existingTeacher =
-                teacherRepository.findById(teacher.getUsername()).orElseThrow(() -> new EntityNotFoundException("Teacher " +
-                        "not found with ID: " + teacher.getUsername()));
-        existingTeacher.setName(teacher.getName());
-        existingTeacher.setAge(teacher.getAge());
-        existingTeacher.setGender(teacher.getGender());
-        existingTeacher.setDepartment(teacher.getDepartment());
-        logger.info("Teacher updated: " + existingTeacher);
-        return teacherRepository.save(existingTeacher);
-    }
-
-    public void deleteTeacher(String id) {
-        logger.info("Teacher deleted with ID: " + id);
-        teacherRepository.deleteById(id);
-    }
-
-    public List<Teacher> getTeachersByDepartment(String department) {
-        return teacherRepository.findByDepartment(department);
+                          AttendanceRepository attendanceRepository, AttendanceMetaRepository attendanceMetaRepository,
+                          CourseRepository courseRepository) {
+        super(teacherRepository, aclassRepository, enrollmentRepository, studentRepository, attendanceRepository,
+                attendanceMetaRepository, courseRepository);
     }
 
     public Teacher registerTeacher(String teacherId, String teacherName, int age, String gender, String department,
@@ -111,84 +51,126 @@ public class TeacherService {
         return null;
     }
 
-    public List<Aclass> getClasses(String id) {
-        return aclassRepository.findByTeacherId(id);
+    public List<Teacher> getAllTeachers() {
+        return teacherRepository.findAll();
     }
 
-    public Aclass getClass(String id) {
-        return aclassRepository.findById(id).orElse(null);
+    /**
+     * Add a new teacher.
+     * @param teacher
+     */
+    public Teacher addTeacher(Teacher teacher) {
+        logger.info("Teacher added: " + teacher);
+        return teacherRepository.save(teacher);
     }
 
-    public List<Student> getClassStudents(String classId) {
-        List<Enrollment> lis = enrollmentRepository.findStudentByAclass_Id(classId);
-        List<Student> students = new ArrayList<>();
-        for (Enrollment e : lis) {
-            students.add(studentRepository.findById(e.getStudent().getUsername()).orElse(null));
-        }
-        return students;
+    /**
+     * Update a teacher.
+     * @param teacher
+     */
+    public Teacher updateTeacher(Teacher teacher) {
+        Teacher existingTeacher =
+                teacherRepository.findById(teacher.getUsername()).orElseThrow(() -> new EntityNotFoundException(
+                        "Teacher " +
+                                "not found with ID: " + teacher.getUsername()));
+        existingTeacher.setName(teacher.getName());
+        existingTeacher.setAge(teacher.getAge());
+        existingTeacher.setGender(teacher.getGender());
+        existingTeacher.setDepartment(teacher.getDepartment());
+        logger.info("Teacher updated: " + existingTeacher);
+        return teacherRepository.save(existingTeacher);
     }
 
-    public Student getStudentInfo(String studentId) {
-        return studentRepository.findById(studentId).orElse(null);
+    /**
+     * Delete a teacher account.
+     * @param id
+     */
+    public void deleteTeacher(String id) {
+        logger.info("Teacher deleted with ID: " + id);
+        teacherRepository.deleteById(id);
     }
 
-    public byte[] getProfileAvatar(String teacherId) {
-        // will return null if image not found. null then tell client to use default image
-        return ImageUtils.getImageFromPath("src/main/resources/static/images/avatar/" + teacherId + ".jpg");
+    /**
+     * Get teachers in a department.
+     * @param department
+     */
+    public List<Teacher> getTeachersByDepartment(String department) {
+        return teacherRepository.findByDepartment(department);
     }
 
-    public List<Attendance> getAttendanceByClassId(String classId) {
-        return attendanceRepository.findByAclass_Id(classId);
-    }
-
-    public AttendanceMeta getAttendanceMeta(String metaId) {
-        return attendanceMetaRepository.findById(metaId).orElse(null);
-    }
-
-    public List<Student> getStudentsCheckinSuccess(String classId, String metaId){
+    /**
+     * Get students checkin successfully by metaId.
+     * @param classId
+     * @param metaId
+     */
+    public List<Student> getStudentsCheckinSuccess(String classId, String metaId) {
         List<Attendance> records = attendanceRepository.findByAclass_IdAndMeta_Id(classId, metaId);
         List<Student> students = new ArrayList<>();
-        int requirement = getAttendanceMeta(metaId).getRequirement();
+        int requirement = getMetaByMetaId(metaId).getRequirement();
         for (Attendance a : records) {
-            if (a.getStatus()==requirement) {
+            if (a.getStatus() == requirement) {
                 students.add(studentRepository.findById(a.getStudent().getUsername()).orElse(null));
             }
         }
         return students;
     }
 
-    public List<Student> getStudentAbsent(String classId, String metaId){
+    /**
+     * Get all students absent in a Meta.
+     * @param classId
+     * @param metaId
+     */
+    public List<Student> getStudentAbsent(String classId, String metaId) {
         List<Student> all = getClassStudents(classId);
         List<Student> success = getStudentsCheckinSuccess(classId, metaId);
         all.removeAll(success);
         return all;
     }
 
+    /**
+     * Give a list of two lists, the first list is the students who have checked in successfully,
+     * the second list is the students who are absent.
+     * @param classId
+     * @param metaId
+     */
     public List<List<Student>> getAttendanceCircumstance(String classId, String metaId) {
         List<Student> absentStudents = getStudentAbsent(classId, metaId);
         List<Student> success = getStudentsCheckinSuccess(classId, metaId);
         return new ArrayList<>(List.of(success, absentStudents));
     }
 
+    /**
+     *
+     * @param classId
+     * @return
+     */
     public byte[] getClassExcel(String classId) {
         String path = "src/main/resources/static/excel/" + classId + ".xlsx";
         List<AttendanceMeta> metas = attendanceMetaRepository.findByAclass_Id(classId);
         return null;
     }
 
-    public void saveAvatar(String id, byte[] image) {
-        ImageUtils.saveImage(image, "src/main/resources/static/images/avatar/" + id + ".jpg");
-    }
-
-    public AttendanceMeta announce(String classId, AttendanceMeta meta){
+    /**
+     * Announce an attendance.
+     * The meta sent from frontend should not have an id.
+     * But will include classId, requirement, location and time
+     * @param classId
+     * @param meta
+     */
+    public AttendanceMeta announce(String classId, AttendanceMeta meta) {
         Aclass aclass = aclassRepository.findById(classId).orElse(null);
         if (aclass == null) {
             return null;
         }
-        meta.setAclass(aclass);  // unnecessary but just in case
+        meta.setId(RandomIdGenerator.generate());
         return attendanceMetaRepository.save(meta);
     }
 
+    /**
+     * Add a class to a teacher.
+     * @param teacherId
+     * @param aclass
+     */
     public Aclass addClass(String teacherId, Aclass aclass) {
         Teacher teacher = teacherRepository.findById(teacherId).orElse(null);
         if (teacher == null) {
@@ -198,6 +180,11 @@ public class TeacherService {
         return aclassRepository.save(aclass);
     }
 
+    /**
+     * Update class information.
+     * @param aclass
+     * @return
+     */
     public Aclass updateClass(Aclass aclass) {
         Aclass existingClass = aclassRepository.findById(aclass.getId()).orElse(null);
         if (existingClass == null) {
@@ -211,6 +198,10 @@ public class TeacherService {
         return aclassRepository.save(existingClass);
     }
 
+    /**
+     * Update an announcement.
+     * @param meta
+     */
     public AttendanceMeta updateAttendanceMeta(AttendanceMeta meta) {
         AttendanceMeta existingMeta = attendanceMetaRepository.findById(meta.getId()).orElse(null);
         if (existingMeta == null) {
@@ -223,14 +214,27 @@ public class TeacherService {
         return attendanceMetaRepository.save(existingMeta);
     }
 
+    /**
+     * Delete a class.
+     * @param id
+     */
     public void deleteClass(String id) {
         aclassRepository.deleteById(id);
     }
 
+    /**
+     * Withdraw an announcement.
+     * @param id
+     */
     public void deleteAttendanceMeta(String id) {
         attendanceMetaRepository.deleteById(id);
     }
 
+    /**
+     * Delete a student from a class.
+     * @param classId
+     * @param studentId
+     */
     public void deleteClassStudent(String classId, String studentId) {
         Enrollment enrollment = enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId);
         enrollmentRepository.delete(enrollment);
