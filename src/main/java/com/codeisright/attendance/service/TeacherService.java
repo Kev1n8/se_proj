@@ -25,30 +25,15 @@ public class TeacherService extends UserService {
                 attendanceMetaRepository, courseRepository);
     }
 
-    public Teacher registerTeacher(String teacherId, String teacherName, int age, String gender, String department,
-                                   String password) {
-        Teacher teacher = teacherRepository.findById(teacherId).orElse(null);
-        if (teacher != null) {
-            logger.info("Teacher already exists with ID: " + teacherId);
+    public Teacher registerTeacher(Teacher teacher) {
+
+        Teacher ifExists = teacherRepository.findById(teacher.getUsername()).orElse(null);
+        if (ifExists != null) {
+            logger.info("Teacher already exists with ID: " + teacher.getUsername());
             return null;
         }
-        teacher = new Teacher(teacherId, teacherName, age, gender, department, password);
         logger.info("Registering teacher: " + teacher);
         return addTeacher(teacher);
-    }
-
-    public Teacher loginTeacher(String teacherId, String password) {
-        Teacher teacher = teacherRepository.findById(teacherId).orElse(null);
-        if (teacher == null) {
-            logger.info("Teacher not found with ID: " + teacherId);
-            return null;
-        }
-        if (password.matches(teacher.getPassword())) {
-            logger.info("Teacher logged in: " + teacher);
-            return teacher;
-        }
-        logger.info("Teacher password incorrect: " + teacher);
-        return null;
     }
 
     public List<Teacher> getAllTeachers() {

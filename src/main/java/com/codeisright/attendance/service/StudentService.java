@@ -65,39 +65,15 @@ public class StudentService extends UserService{
 
     /**
      * Add a new student to the database.
-     * @param id
-     * @param studentName
-     * @param codedPassword
-     * @param age
-     * @param gender
-     * @param major
-     * @param studentClass
+     * @param student
      */
-    public Student registerStudent(String id, String studentName, String codedPassword, int age, String gender,
-                                   String major, String studentClass) {
-        Student toAdd = studentRepository.findById(id).orElse(null);
+    public Student registerStudent(Student student) {
+        Student toAdd = studentRepository.findById(student.getUsername()).orElse(null);
         if (toAdd != null) {
+            logger.info("Student already exists with ID: " + student.getUsername());
             return null;
         }
-        toAdd = new Student(id, studentName, codedPassword, age, gender, major, studentClass);
-        return toAdd;
-    }
-
-    /**
-     * Login a student with id and password.
-     * @param id
-     * @param password
-     */
-    public Student loginStudent(String id, String password) {
-        //TODO: security configuration
-        Student student = studentRepository.findById(id).orElse(null);
-        if (student == null) {
-            return null;
-        }
-        if (student.getCodedpassword().matches(password)) {
-            return student;
-        }
-        return null;
+        return studentRepository.save(student);
     }
 
     /**
