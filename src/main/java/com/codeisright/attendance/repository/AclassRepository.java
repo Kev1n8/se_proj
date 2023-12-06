@@ -1,6 +1,7 @@
 package com.codeisright.attendance.repository;
 
 import com.codeisright.attendance.data.Aclass;
+import com.codeisright.attendance.data.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
