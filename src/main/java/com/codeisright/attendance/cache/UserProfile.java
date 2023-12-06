@@ -17,7 +17,7 @@ public class UserProfile {
 
     private String major;
 
-    private String theclass;
+    private String description;
 
     private String role;
 
@@ -29,7 +29,7 @@ public class UserProfile {
         this.gender = "";
         this.department = "";
         this.major = "";
-        this.theclass = "";
+        this.description = "";
         this.role = "";
     }
 
@@ -41,7 +41,7 @@ public class UserProfile {
         this.gender = gender;
         this.department = department;
         this.major = major;
-        this.theclass = theclass;
+        this.description = theclass;
         this.role = role;
     }
 
@@ -93,12 +93,12 @@ public class UserProfile {
         this.major = major;
     }
 
-    public String getTheclass() {
-        return theclass;
+    public String getDescription() {
+        return description;
     }
 
-    public void setTheclass(String theclass) {
-        this.theclass = theclass;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public void setRole(String role) {
@@ -122,7 +122,7 @@ public class UserProfile {
         this.gender = student.getGender();
         this.age = student.getAge();
         this.major = student.getMajor();
-        this.theclass = student.getTheclass();
+        this.description = student.getDescription();
         this.name = student.getName();
         this.id = student.getUsername();
         this.role = "student";
@@ -137,7 +137,7 @@ public class UserProfile {
                 ", gender='" + gender + '\'' +
                 ", department='" + department + '\'' +
                 ", major='" + major + '\'' +
-                ", theclass='" + theclass + '\'' +
+                ", theclass='" + description + '\'' +
                 ", role='" + role + '\'' +
                 '}';
     }

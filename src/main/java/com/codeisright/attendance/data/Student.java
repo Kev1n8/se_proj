@@ -17,7 +17,7 @@ public class Student implements UserDetails {
     private int age;
     private String gender;
     private String major;
-    private String theclass;
+    private String description;
     protected Student() {}
 
     public Student(String id, String studentName, String codedpassword, int age, String gender, String major, String studentClass) {
@@ -26,7 +26,7 @@ public class Student implements UserDetails {
         this.age = age;
         this.gender = gender;
         this.major = major;
-        this.theclass = studentClass;
+        this.description = studentClass;
         this.codedpassword = codedpassword;
     }
     public void setId(String stuId) {
@@ -57,12 +57,12 @@ public class Student implements UserDetails {
         this.major = major;
     }
 
-    public String getTheclass() {
-        return theclass;
+    public String getDescription() {
+        return description;
     }
 
-    public void setTheclass(String stuClass) {
-        this.theclass = stuClass;
+    public void setDescription(String stuClass) {
+        this.description = stuClass;
     }
 
     public int getAge() {
@@ -89,7 +89,7 @@ public class Student implements UserDetails {
                 ", age=" + age +
                 ", gender='" + gender + '\'' +
                 ", major='" + major + '\'' +
-                ", studentClass='" + theclass + '\'' +
+                ", studentClass='" + description + '\'' +
                 '}';
     }
 
