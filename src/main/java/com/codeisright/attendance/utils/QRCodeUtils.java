@@ -22,7 +22,8 @@ public class QRCodeUtils {
     // 生成 QR Code
     public static String generateQRCode(String data) {
         try {
-            String randomPrefix = String.valueOf(System.currentTimeMillis());  // 生成随机前缀，前13位为时间戳
+            // 生成随机前缀，前13位为30秒后的时间戳
+            String randomPrefix = String.valueOf(System.currentTimeMillis() + 30000);
             data = randomPrefix + data;
             QRCodeWriter qrCodeWriter = new QRCodeWriter();
             BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, 200, 200);
@@ -61,5 +62,18 @@ public class QRCodeUtils {
         } catch (FormatException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean qrInTime(String QRCode) {
+        String data = new String(Base64.getDecoder().decode(QRCode));
+        String randomPrefix = data.substring(0, 13);
+        long timestamp = Long.parseLong(randomPrefix);
+        return System.currentTimeMillis() < timestamp;
+    }
+
+    public static boolean isMetaIdEqual(String metaId, String QRCode) {
+        String data = new String(Base64.getDecoder().decode(QRCode));
+        String metaIdInQRCode = data.substring(13, 13 + metaId.length());
+        return metaId.equals(metaIdInQRCode);
     }
 }
