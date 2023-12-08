@@ -1,1 +1,2 @@
-This is a project for course.
+# se_proj
+a proj of software engineering

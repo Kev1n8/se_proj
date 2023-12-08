@@ -1,5 +1,7 @@
 FROM openjdk:17-jdk
 
+RUN apk --no-cache add findutils
+
 WORKDIR /app
 
 COPY build.gradle settings.gradle gradlew ./
