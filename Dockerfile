@@ -1,6 +1,6 @@
 FROM openjdk:17-jdk
 
-RUN apk --no-cache add findutils
+RUN microdnf install findutils
 
 WORKDIR /app
 
