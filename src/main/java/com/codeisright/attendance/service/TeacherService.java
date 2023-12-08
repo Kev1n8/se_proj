@@ -100,23 +100,11 @@ public class TeacherService extends UserService {
         List<StudentInfo> students = new ArrayList<>();
         int requirement = getMetaByMetaId(metaId).getRequirement();
         for (Attendance a : records) {
-            if (a.getStatus() == requirement) {
+            if (a.getStatus() >= requirement) {
                 students.add(studentRepository.findStudentInfoById(a.getStudent().getUsername()));
             }
         }
         return students;
-    }
-
-    /**
-     * Get all students absent in a Meta.
-     * @param classId
-     * @param metaId
-     */
-    public List<StudentInfo> getStudentAbsent(String classId, String metaId) {
-        List<StudentInfo> all = getClassStudents(classId);
-        List<StudentInfo> success = getStudentsCheckinSuccess(classId, metaId);
-        all.removeAll(success);
-        return all;
     }
 
     /**
@@ -126,8 +114,16 @@ public class TeacherService extends UserService {
      * @param metaId
      */
     public List<List<StudentInfo>> getAttendanceCircumstance(String classId, String metaId) {
-        List<StudentInfo> absentStudents = getStudentAbsent(classId, metaId);
+        List<StudentInfo> absentStudents = getClassStudents(classId);
         List<StudentInfo> success = getStudentsCheckinSuccess(classId, metaId);
+        for (StudentInfo s : success) {  // not efficient, but works
+            for (StudentInfo a : absentStudents) {
+                if (s.getId().equals(a.getId())) {
+                    absentStudents.remove(a);
+                    break;
+                }
+            }
+        }
         return new ArrayList<>(List.of(success, absentStudents));
     }
 
@@ -137,7 +133,7 @@ public class TeacherService extends UserService {
      * @return
      */
     public byte[] getClassExcel(String classId) {
-        String path = "src/main/resources/static/excel/" + classId + ".xlsx";
+        String path = "src/main/resources/static/excels/" + classId + ".xlsx";
         List<AttendanceMeta> metas = attendanceMetaRepository.findByAclass_Id(classId);
         if (metas == null || metas.size() == 0) {
             return null;
@@ -146,8 +142,8 @@ public class TeacherService extends UserService {
         for (AttendanceMeta meta : metas) {
             circumstances.add(getAttendanceCircumstance(classId, meta.getId()));
         }
-        ExcelGenerator.save(path, metas, circumstances);
-        return ExcelGenerator.getExcel(path);
+        logger.info("Done collecting records for class with id: " + classId);
+        return ExcelGenerator.save(path, metas, circumstances);
     }
 
     /**
