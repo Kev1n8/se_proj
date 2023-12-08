@@ -26,6 +26,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
+        logger.info("Finding id: " + username);
         Teacher teacher = teacherService.getTeacherById(username);
         if (teacher == null)
             return studentService.getStudentById(username);
