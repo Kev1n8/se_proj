@@ -1,5 +1,6 @@
 package com.codeisright.attendance.data;
 
+import com.codeisright.attendance.view.TeacherInfo;
 import jakarta.persistence.*;
 
 @Entity
@@ -30,6 +31,14 @@ public class Aclass {
         this.grade = grade;
         this.course = course;
         this.teacher = teacher;
+    }
+
+    public Aclass(Aclass aclass) {
+        this.title = aclass.title;
+        this.description = aclass.description;
+        this.grade = aclass.grade;
+        this.course = aclass.course;
+        this.teacher = aclass.teacher;
     }
 
     public String getId() {
@@ -74,6 +83,35 @@ public class Aclass {
 
     public Teacher getTeacher() {
         return teacher;
+    }
+
+    public TeacherInfo getTeacherInfo() {
+        return new TeacherInfo() {
+            @Override
+            public String getId() {
+                return teacher.getUsername();
+            }
+
+            @Override
+            public String getName() {
+                return teacher.getName();
+            }
+
+            @Override
+            public int getAge() {
+                return teacher.getAge();
+            }
+
+            @Override
+            public String getGender() {
+                return teacher.getGender();
+            }
+
+            @Override
+            public String getDepartment() {
+                return teacher.getDepartment();
+            }
+        };
     }
 
     public void setTeacher(Teacher teacher) {
