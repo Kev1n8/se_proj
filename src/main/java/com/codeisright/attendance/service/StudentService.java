@@ -2,8 +2,8 @@ package com.codeisright.attendance.service;
 
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.repository.*;
-import com.codeisright.attendance.utils.ImageUtils;
 import com.codeisright.attendance.utils.QRCodeUtils;
+import com.codeisright.attendance.view.StudentInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -11,12 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
-public class StudentService extends UserService{
+public class StudentService extends UserService {
     private static final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     public StudentService(TeacherRepository teacherRepository, AclassRepository aclassRepository,
@@ -33,15 +32,25 @@ public class StudentService extends UserService{
 
     /**
      * Get a student account by id.
+     *
      * @param id
      */
+    public StudentInfo getStudentInfoById(String id) {
+        logger.info("Getting student with ID: " + id);
+        return studentRepository.findStudentInfoById(id);
+    }
+
+    /**
+     *
+     */
     public Student getStudentById(String id) {
-        return studentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Error finding student " +
-                "with id: " + id));
+        return studentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("not found student with " +
+                "id:" + id));
     }
 
     /**
      * Update a student account in the database.
+     *
      * @param student
      */
     public Student updateStudent(Student student) {
@@ -57,6 +66,7 @@ public class StudentService extends UserService{
 
     /**
      * Delete a student account from the database.
+     *
      * @param id
      */
     public void deleteStudent(String id) {
@@ -65,6 +75,7 @@ public class StudentService extends UserService{
 
     /**
      * Add a new student to the database.
+     *
      * @param student
      */
     public Student registerStudent(Student student) {
@@ -78,6 +89,7 @@ public class StudentService extends UserService{
 
     /**
      * Get the attendance record of a student in a single metaAtt(if checkin step1 successfully before).
+     *
      * @param studentId
      * @param attendanceMetaId
      */
@@ -87,6 +99,7 @@ public class StudentService extends UserService{
 
     /**
      * Add a new checkin record to the attendance table.
+     *
      * @param studentId
      * @param classId
      * @param status
@@ -95,18 +108,19 @@ public class StudentService extends UserService{
     public void addCheckin(String studentId, String classId, int status, LocalDateTime time) {
         Student student =
                 studentRepository.findById(studentId).orElseThrow(() -> new com.codeisright.attendance.exception.EntityNotFoundException(
-                "Student not found with ID: " + studentId));
+                        "Student not found with ID: " + studentId));
         Aclass aClass =
                 aclassRepository.findById(classId).orElseThrow(() -> new com.codeisright.attendance.exception.EntityNotFoundException("Class not " +
-                "found with ID: " + classId));
+                        "found with ID: " + classId));
         Attendance toAdd = new Attendance(student, aClass, status, time, null, null);
         attendanceRepository.save(toAdd);
     }
 
     /**
      * Forward the latest checkin record to the current time. If location value is -1, then keep the original value.
+     *
      * @param recordToForward
-     * @param time          current time
+     * @param time            current time
      * @param latitude
      * @param longitude
      */
@@ -117,7 +131,7 @@ public class StudentService extends UserService{
         }
         recordToForward.setTime(time);
         recordToForward.forward();
-        if(latitude!=-1&&longitude!=-1) {
+        if (latitude != -1 && longitude != -1) {
             recordToForward.setLatitude(latitude);
             recordToForward.setLongitude(longitude);
         }
@@ -126,6 +140,7 @@ public class StudentService extends UserService{
 
     /**
      * Calculate the distance(meters) between two locations.
+     *
      * @param lat1
      * @param lon1
      * @param lat2
@@ -145,6 +160,7 @@ public class StudentService extends UserService{
 
     /**
      * Check if the location is acceptable, which means the distance between the two locations should be less than 100m.
+     *
      * @param latitude
      * @param longitude
      * @param latitude2
@@ -157,6 +173,7 @@ public class StudentService extends UserService{
 
     /**
      * Check if the current time is in the time range of the latest attendance meta.
+     *
      * @param classId
      * @param time
      */
@@ -171,6 +188,7 @@ public class StudentService extends UserService{
 
     /**
      * Checkin step1 for a student.
+     *
      * @param studentId
      * @param classId
      * @param status
@@ -188,6 +206,7 @@ public class StudentService extends UserService{
 
     /**
      * Checkin step2 for a student.
+     *
      * @param studentId
      * @param classId
      * @param latitute
@@ -205,13 +224,13 @@ public class StudentService extends UserService{
             throw new RuntimeException("Cannot forward. Teacher has not started the class yet or has ended the " +
                     "class.");
         }
-        if (original==null){//没有先进行签到码签到
+        if (original == null) {//没有先进行签到码签到
             throw new RuntimeException("Cannot forward. Student has not checked in yet.");
         }
-        if(original.getStatus()!=1){//不应该进行这一步签到
+        if (original.getStatus() != 1) {//不应该进行这一步签到
             throw new RuntimeException("Cannot forward. Student's status is not 1.");
         }
-        if (!acceptableLocation(latitute, longitute, l1, l2)){//不在签到范围内
+        if (!acceptableLocation(latitute, longitute, l1, l2)) {//不在签到范围内
             throw new RuntimeException("Cannot forward. Location is not acceptable.");
         }
         forwardCheckin(original, time, latitute, longitute);
@@ -221,6 +240,7 @@ public class StudentService extends UserService{
 
     /**
      * Checkin step3 for a student.
+     *
      * @param studentId
      * @param classId
      * @param QRCode
@@ -234,16 +254,16 @@ public class StudentService extends UserService{
             throw new RuntimeException("Cannot forward. Teacher has not started the class yet or has ended the " +
                     "class.");
         }
-        if (original==null){//没有先进行签到码签到
+        if (original == null) {//没有先进行签到码签到
             throw new RuntimeException("Cannot forward. Student has not checked in yet.");
         }
-        if(original.getStatus()!=2){//不应该进行这一步签到
+        if (original.getStatus() != 2) {//不应该进行这一步签到
             throw new RuntimeException("Cannot forward. Student's status is not 2.");
         }
-        if (!QRCodeUtils.qrInTime(QRCode)){
+        if (!QRCodeUtils.qrInTime(QRCode)) {
             throw new RuntimeException("Cannot forward. QRCode has expired.");
         }
-        if (!QRCodeUtils.isMetaIdEqual(QRCode, metaId)){
+        if (!QRCodeUtils.isMetaIdEqual(QRCode, metaId)) {
             throw new RuntimeException("Cannot forward. Unknown QRCode.");
         }
         forwardCheckin(original, time, -1L, -1L);

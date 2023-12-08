@@ -3,6 +3,8 @@ package com.codeisright.attendance.service;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.repository.*;
 import com.codeisright.attendance.utils.ImageUtils;
+import com.codeisright.attendance.view.StudentInfo;
+import com.codeisright.attendance.view.TeacherInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,11 +71,11 @@ public class UserService {
      * Get a list of students in a class.
      * @param classId
      */
-    public List<Student> getClassStudents(String classId) {
+    public List<StudentInfo> getClassStudents(String classId) {
         List<Enrollment> lis = enrollmentRepository.findStudentByAclass_Id(classId);
-        List<Student> students = new ArrayList<>();
+        List<StudentInfo> students = new ArrayList<>();
         for (Enrollment e : lis) {
-            students.add(studentRepository.findById(e.getStudent().getUsername()).orElse(null));
+            students.add(studentRepository.findStudentInfoById(e.getStudent().getUsername()));
         }
         return students;
     }
@@ -82,8 +84,8 @@ public class UserService {
      * Get a student by its id or null if not exists.
      * @param studentId
      */
-    public Student getStudentInfo(String studentId) {
-        return studentRepository.findById(studentId).orElse(null);
+    public StudentInfo getStudentInfo(String studentId) {
+        return studentRepository.findStudentInfoById(studentId);
     }
 
     /**
@@ -145,8 +147,8 @@ public class UserService {
      * Get the teacher of a class.
      * @param teacherId
      */
-    public Teacher getTeacherByClassId(String teacherId) {
-        return getClassById(teacherId).getTeacher();
+    public TeacherInfo getTeacherByClassId(String teacherId) {
+        return getClassById(teacherId).getTeacherInfo();
     }
 
     /**

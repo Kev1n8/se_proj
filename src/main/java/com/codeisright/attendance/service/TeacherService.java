@@ -4,6 +4,8 @@ import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.*;
 import com.codeisright.attendance.utils.RandomIdGenerator;
+import com.codeisright.attendance.view.StudentInfo;
+import com.codeisright.attendance.view.TeacherInfo;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
@@ -34,10 +36,6 @@ public class TeacherService extends UserService {
         }
         logger.info("Registering teacher: " + teacher);
         return addTeacher(teacher);
-    }
-
-    public List<Teacher> getAllTeachers() {
-        return teacherRepository.findAll();
     }
 
     /**
@@ -76,10 +74,18 @@ public class TeacherService extends UserService {
     }
 
     /**
+     * Get info of a teacher by ID.
+     * @param id
+     */
+    public TeacherInfo getTeacherInfoById(String id) {
+        return teacherRepository.findTeacherInfoById(id);
+    }
+
+    /**
      * Get teachers in a department.
      * @param department
      */
-    public List<Teacher> getTeachersByDepartment(String department) {
+    public List<TeacherInfo> getTeachersByDepartment(String department) {
         return teacherRepository.findByDepartment(department);
     }
 
@@ -88,13 +94,13 @@ public class TeacherService extends UserService {
      * @param classId
      * @param metaId
      */
-    public List<Student> getStudentsCheckinSuccess(String classId, String metaId) {
+    public List<StudentInfo> getStudentsCheckinSuccess(String classId, String metaId) {
         List<Attendance> records = attendanceRepository.findByAclass_IdAndMeta_Id(classId, metaId);
-        List<Student> students = new ArrayList<>();
+        List<StudentInfo> students = new ArrayList<>();
         int requirement = getMetaByMetaId(metaId).getRequirement();
         for (Attendance a : records) {
             if (a.getStatus() == requirement) {
-                students.add(studentRepository.findById(a.getStudent().getUsername()).orElse(null));
+                students.add(studentRepository.findStudentInfoById(a.getStudent().getUsername()));
             }
         }
         return students;
@@ -105,9 +111,9 @@ public class TeacherService extends UserService {
      * @param classId
      * @param metaId
      */
-    public List<Student> getStudentAbsent(String classId, String metaId) {
-        List<Student> all = getClassStudents(classId);
-        List<Student> success = getStudentsCheckinSuccess(classId, metaId);
+    public List<StudentInfo> getStudentAbsent(String classId, String metaId) {
+        List<StudentInfo> all = getClassStudents(classId);
+        List<StudentInfo> success = getStudentsCheckinSuccess(classId, metaId);
         all.removeAll(success);
         return all;
     }
@@ -118,9 +124,9 @@ public class TeacherService extends UserService {
      * @param classId
      * @param metaId
      */
-    public List<List<Student>> getAttendanceCircumstance(String classId, String metaId) {
-        List<Student> absentStudents = getStudentAbsent(classId, metaId);
-        List<Student> success = getStudentsCheckinSuccess(classId, metaId);
+    public List<List<StudentInfo>> getAttendanceCircumstance(String classId, String metaId) {
+        List<StudentInfo> absentStudents = getStudentAbsent(classId, metaId);
+        List<StudentInfo> success = getStudentsCheckinSuccess(classId, metaId);
         return new ArrayList<>(List.of(success, absentStudents));
     }
 
@@ -161,8 +167,8 @@ public class TeacherService extends UserService {
         if (teacher == null) {
             return null;
         }
-        aclass.setTeacher(teacher);
-        return aclassRepository.save(aclass);
+        Aclass newClass = new Aclass(aclass);
+        return aclassRepository.save(newClass);
     }
 
     /**
