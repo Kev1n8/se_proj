@@ -5,6 +5,7 @@ import com.codeisright.attendance.data.Student;
 import com.codeisright.attendance.data.Teacher;
 import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -34,18 +35,22 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public String login(@RequestParam UserDto dto, HttpSession session) {
-        String username = dto.getUsername();
+    public String login(@RequestBody UserDto dto, HttpServletRequest request) {
+        logger.info("login request received" + dto.toString());
+        String id = dto.getId();
         String password = dto.getPassword();
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(username, password);
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(id, password);
         try {
-            logger.info("username: " + username + "pairing...");
-            authenticationManager.authenticate(token);
+            logger.info("username: " + id + "pairing...");
+            Authentication auth = authenticationManager.authenticate(token);
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            HttpSession session = request.getSession(true);
             session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
                     SecurityContextHolder.getContext());
-            return "redirect:/hello";
+            logger.info("username: " + id + "pairing successfully");
+            return "hello";
         }catch (Exception e) {
-            logger.info("username: " + username + "pairing failed");
+            logger.info("username: " + id + "pairing failed");
             return "login?error";
         }
     }
@@ -63,7 +68,7 @@ public class LoginController {
     }
 
     @PostMapping("/register/teacher")
-    public Teacher registerTeacher(@RequestParam Teacher teacher) {
+    public Teacher registerTeacher(@RequestBody Teacher teacher) {
         try {
             logger.info("registering teacher: " + teacher.getUsername());
             return teacherService.addTeacher(teacher);
