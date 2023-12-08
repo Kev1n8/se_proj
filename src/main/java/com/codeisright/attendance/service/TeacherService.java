@@ -3,6 +3,7 @@ package com.codeisright.attendance.service;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.*;
+import com.codeisright.attendance.utils.ExcelGenerator;
 import com.codeisright.attendance.utils.RandomIdGenerator;
 import com.codeisright.attendance.view.StudentInfo;
 import com.codeisright.attendance.view.TeacherInfo;
@@ -138,7 +139,15 @@ public class TeacherService extends UserService {
     public byte[] getClassExcel(String classId) {
         String path = "src/main/resources/static/excel/" + classId + ".xlsx";
         List<AttendanceMeta> metas = attendanceMetaRepository.findByAclass_Id(classId);
-        return null;
+        if (metas == null || metas.size() == 0) {
+            return null;
+        }
+        List<List<List<StudentInfo>>> circumstances = new ArrayList<>();
+        for (AttendanceMeta meta : metas) {
+            circumstances.add(getAttendanceCircumstance(classId, meta.getId()));
+        }
+        ExcelGenerator.save(path, metas, circumstances);
+        return ExcelGenerator.getExcel(path);
     }
 
     /**

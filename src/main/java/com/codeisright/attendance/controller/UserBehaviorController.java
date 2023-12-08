@@ -193,8 +193,17 @@ public class UserBehaviorController {
     @GetMapping("/teacher/classes/{classId}/getExcel")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Resource> getAttendanceExcel(@PathVariable String id, @PathVariable String classId) {
-        // TODO: create an excel file and return
-        return null;
+        byte[] excelBytes = teacherService.getClassExcel(classId);
+        if (excelBytes == null || excelBytes.length == 0) {
+            return ResponseEntity.noContent().build();
+        }
+        ByteArrayResource resource = new ByteArrayResource(excelBytes);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(resource.contentLength());
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
     }
 
     /**
