@@ -7,14 +7,18 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.ByteArrayInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.util.List;
 
 public class ExcelGenerator {
-    public static void save(String path, List<AttendanceMeta> metas, List<List<List<StudentInfo>>> records){
-        Workbook workbook = new XSSFWorkbook();
+    private static final Logger logger = LoggerFactory.getLogger(ExcelGenerator.class);
+
+    public static byte[] save(String path, List<AttendanceMeta> metas, List<List<List<StudentInfo>>> records){
+        Workbook workbook = new XSSFWorkbook();// will save as .xlsx
         Sheet sheet = workbook.createSheet("Attendance");
         Row row = sheet.createRow(0);
         row.createCell(0).setCellValue("Student ID");
@@ -28,27 +32,28 @@ public class ExcelGenerator {
                 List<StudentInfo> students = circumstance.get(j);
                 for (int k = 0; k < students.size(); k++) {
                     row = sheet.createRow(k + 1);
-                    row.createCell(0).setCellValue(students.get(k).getId());
+                    row.createCell(0).setCellValue(students.get(k).getId()); // 有点冗余，但是不想改了
                     row.createCell(1).setCellValue(students.get(k).getName());
                     row.createCell(i + 2).setCellValue(j == 0 ? "√" : "×");
                 }
             }
+            // 创建到课率
+            row = sheet.createRow(sheet.getLastRowNum() + 2);
+            row.createCell(0).setCellValue("到课率");
+//            row.createCell(2).setCellValue(metas.get(i).getRate());
         }
-        try (FileOutputStream fileOutputStream = new FileOutputStream(path)) {
+        logger.info("Saving attendance to " + path);
+        byte[] toReturn = new byte[0];
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path, false);
+             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             workbook.write(fileOutputStream);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static byte[] getExcel(String path) {
-        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            Workbook workbook = new XSSFWorkbook(path);
             workbook.write(byteArrayOutputStream);
-            return byteArrayOutputStream.toByteArray();
+            toReturn = byteArrayOutputStream.toByteArray();
+            logger.info("File saved to " + path);
+            workbook.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return null;
+        return toReturn;
     }
 }
