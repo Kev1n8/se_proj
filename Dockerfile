@@ -1,5 +1,8 @@
 FROM openjdk:17-jdk
 
+RUN apt-get update && apt-get install -y \
+  xargs
+
 WORKDIR /app
 
 COPY build.gradle settings.gradle gradlew ./
