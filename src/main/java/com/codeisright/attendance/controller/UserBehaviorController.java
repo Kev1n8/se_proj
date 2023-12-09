@@ -6,6 +6,7 @@ import com.codeisright.attendance.service.TeacherService;
 import com.codeisright.attendance.view.StudentInfo;
 import com.codeisright.attendance.view.TeacherInfo;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -21,7 +22,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/usr/{id}")
 public class UserBehaviorController {
-    private final Logger logger = org.slf4j.LoggerFactory.getLogger(UserBehaviorController.class);
+    private final Logger logger = LoggerFactory.getLogger(UserBehaviorController.class);
     private final TeacherService teacherService;
     private final StudentService studentService;
 
@@ -319,6 +320,17 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public void deleteAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
         teacherService.deleteAttendanceMeta(metaId);
+    }
+
+    /**
+     * 添加班级
+     * @param id
+     * @param clazz
+     */
+    @PostMapping("/teacher/classes")
+    @PreAuthorize("#id == authentication.principal.username")
+    public void addClassStudent(@PathVariable String id, @RequestBody Aclass clazz) {
+        teacherService.addClass(id, clazz);
     }
 
     /**
