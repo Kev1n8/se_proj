@@ -97,6 +97,10 @@ public class StudentService extends UserService {
         return attendanceRepository.findByStudent_IdAndMeta_Id(studentId, attendanceMetaId);
     }
 
+    public boolean inClass(String studentId, String classId) {
+        return enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId) != null;
+    }
+
     /**
      * Add a new checkin record to the attendance table.
      *
@@ -194,6 +198,9 @@ public class StudentService extends UserService {
      * @param status
      */
     public boolean doCheckin(String studentId, String classId, int status) {
+        if(!inClass(studentId, classId)) {
+            throw new RuntimeException("Cannot checkin. Student is not enrolled in this class.");
+        }
         LocalDateTime time = LocalDateTime.now();
         if (!isInTime(classId, time)) {
             throw new RuntimeException("Cannot checkin. Teacher has not started the class yet or has ended the " +
