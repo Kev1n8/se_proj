@@ -1,5 +1,6 @@
 package com.codeisright.attendance.security;
 
+import com.codeisright.attendance.service.impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -9,17 +10,18 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 public class ApplicationSecurity extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
 
     @Autowired
-    public ApplicationSecurity(UserDetailsService userDetailsService) {
+    public ApplicationSecurity(UserDetailsServiceImpl userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 
@@ -43,11 +45,11 @@ public class ApplicationSecurity extends SecurityConfigurerAdapter<DefaultSecuri
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         //TODO: make sure the security and the Controllers working together
-        http
+        http.addFilterBefore(new JwtAuthenticationFilter("secret", userDetailsService), UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/register/**").permitAll()
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/logout").permitAll()
+                        .requestMatchers("/logout").hasRole("USER")
                         .requestMatchers("/usr/{id}/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/usr/{id}/student/**").hasRole("STUDENT")
                         .anyRequest().authenticated()
