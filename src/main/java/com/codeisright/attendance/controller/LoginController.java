@@ -6,17 +6,23 @@ import com.codeisright.attendance.data.Teacher;
 import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.web.bind.annotation.*;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Date;
 
 @RestController
 public class LoginController {
@@ -32,38 +38,44 @@ public class LoginController {
         this.studentService = studentService;
     }
 
+    /**
+     * login and return token
+     * @param dto user info
+     * @param request  http request
+     */
     @PostMapping("/login")
-    public String login(@RequestBody UserDto dto, HttpServletRequest request) {
+    public boolean login(@RequestBody UserDto dto, HttpServletResponse response, HttpServletRequest request) {
         logger.info("login request received" + dto.toString());
         String id = dto.getId();
         String password = dto.getPassword();
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(id, password);
-        try {
-            logger.info("username: " + id + "pairing...");
-            Authentication auth = authenticationManager.authenticate(token);
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            HttpSession session = request.getSession(true);
-            session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY,
-                    SecurityContextHolder.getContext());
-            logger.info("username: " + id + "pairing successfully");
-            return "hello";
-        }catch (Exception e) {
-            logger.info("username: " + id + "pairing failed");
-            return "login?error";
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id, password);
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
+        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        HttpSession session = request.getSession(true);
+        session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+        String token = Jwts.builder()
+                .setSubject(userDetails.getUsername())
+                .setExpiration(new Date(System.currentTimeMillis() + 864000000)) // 10 days
+                .signWith(SignatureAlgorithm.HS512, "secret".getBytes())
+                .compact();
+        response.addHeader("Authorization", "Bearer " + token);
+        logger.info("login success");
+        return true;
+    }
+
+    /**
+     * logout
+     */
+    @GetMapping("/logout")
+    public void logout(HttpServletRequest request) {
+        logger.info("logout request received");
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
         }
     }
 
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        try {
-            session.invalidate();
-            logger.info("logout successfully");
-        } catch (Exception e) {
-            logger.info("logout failed");
-            return "logout?error";
-        }
-        return "redirect:/login";
-    }
 
     @PostMapping("/register/teacher")
     public Teacher registerTeacher(@RequestBody Teacher teacher) {
