@@ -1,12 +1,10 @@
 package com.codeisright.attendance.data;
 
-import com.beust.ah.A;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -18,7 +16,7 @@ public class Teacher implements UserDetails {
 
     private String name;
 
-    private String codedpassword;
+    private String password;
 
     private int age;
 
@@ -26,25 +24,13 @@ public class Teacher implements UserDetails {
 
     private String department;
 
-    private String role = "ROLE_TEACHER";
-
     private boolean isExpired;
 
     protected Teacher() {}
 
-    public Teacher(String id, String codedpassword) {
+    public Teacher(String id, String password) {
         this.id = id;
-        this.codedpassword = codedpassword;
-    }
-
-    public Teacher(String teacherId, String teacherName, int age, String gender, String department, String codedPassword) {
-        this.id = teacherId;
-        this.name = teacherName;
-        this.age = age;
-        this.gender = gender;
-        this.department = department;
-        this.codedpassword = codedPassword;
-        this.isExpired = false;
+        this.password = password;
     }
 
     public void setId(String teaId) {
@@ -84,7 +70,7 @@ public class Teacher implements UserDetails {
     }
 
     public void setPassword(String codedPassword) {
-        this.codedpassword = codedPassword;
+        this.password = codedPassword;
     }
 
     public void setExpired(boolean isExpired) {
@@ -104,12 +90,14 @@ public class Teacher implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.<GrantedAuthority>of(new SimpleGrantedAuthority(this.role));
+        GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_USER");
+        GrantedAuthority authority1 = new SimpleGrantedAuthority("ROLE_TEACHER");
+        return List.of(authority, authority1);
     }
 
     @Override
     public String getPassword() {
-        return this.codedpassword;
+        return this.password;
     }
 
     @Override
