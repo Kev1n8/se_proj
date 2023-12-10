@@ -4,6 +4,7 @@ import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.*;
 import com.codeisright.attendance.utils.ExcelGenerator;
+import com.codeisright.attendance.utils.QRCodeUtils;
 import com.codeisright.attendance.utils.RandomIdGenerator;
 import com.codeisright.attendance.view.StudentInfo;
 import com.codeisright.attendance.view.TeacherInfo;
@@ -12,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +31,6 @@ public class TeacherService extends UserService {
     }
 
     public Teacher registerTeacher(Teacher teacher) {
-
         Teacher ifExists = teacherRepository.findById(teacher.getUsername()).orElse(null);
         if (ifExists != null) {
             logger.info("Teacher already exists with ID: " + teacher.getUsername());
@@ -41,7 +42,7 @@ public class TeacherService extends UserService {
 
     /**
      * Add a new teacher.
-     * @param teacher
+     * @param teacher the teacher to be added.
      */
     public Teacher addTeacher(Teacher teacher) {
         logger.info("Teacher added: " + teacher);
@@ -50,7 +51,7 @@ public class TeacherService extends UserService {
 
     /**
      * Update a teacher.
-     * @param teacher
+     * @param teacher the teacher to be updated.
      */
     public Teacher updateTeacher(Teacher teacher) {
         Teacher existingTeacher =
@@ -67,7 +68,7 @@ public class TeacherService extends UserService {
 
     /**
      * Delete a teacher account.
-     * @param id
+     * @param id the ID of the teacher to be deleted.
      */
     public void deleteTeacher(String id) {
         logger.info("Teacher deleted with ID: " + id);
@@ -76,24 +77,16 @@ public class TeacherService extends UserService {
 
     /**
      * Get info of a teacher by ID.
-     * @param id
+     * @param id the ID of the teacher.
      */
     public TeacherInfo getTeacherInfoById(String id) {
         return teacherRepository.findTeacherInfoById(id);
     }
 
     /**
-     * Get teachers in a department.
-     * @param department
-     */
-    public List<TeacherInfo> getTeachersByDepartment(String department) {
-        return teacherRepository.findByDepartment(department);
-    }
-
-    /**
      * Get students checkin successfully by metaId.
-     * @param classId
-     * @param metaId
+     * @param classId the classId of the class.
+     * @param metaId the metaId of the attendance.
      */
     public List<StudentInfo> getStudentsCheckinSuccess(String classId, String metaId) {
         List<Attendance> records = attendanceRepository.findByAclass_IdAndMeta_Id(classId, metaId);
@@ -110,8 +103,8 @@ public class TeacherService extends UserService {
     /**
      * Give a list of two lists, the first list is the students who have checked in successfully,
      * the second list is the students who are absent.
-     * @param classId
-     * @param metaId
+     * @param classId the classId of the class.
+     * @param metaId the metaId of the attendance.
      */
     public List<List<StudentInfo>> getAttendanceCircumstance(String classId, String metaId) {
         List<StudentInfo> absentStudents = getClassStudents(classId);
@@ -128,9 +121,9 @@ public class TeacherService extends UserService {
     }
 
     /**
-     *
-     * @param classId
-     * @return
+     *  Get the attendance circumstance of a class.
+     * @param classId  the classId of the class.
+     * @return a list of attendance circumstance of the class.
      */
     public byte[] getClassExcel(String classId) {
         String path = "src/main/resources/static/excels/" + classId + ".xlsx";
@@ -150,8 +143,8 @@ public class TeacherService extends UserService {
      * Announce an attendance.
      * The meta sent from frontend should not have an id.
      * But will include classId, requirement, location and time
-     * @param classId
-     * @param meta
+     * @param classId the classId of the class.
+     * @param meta the meta of the attendance.
      */
     public AttendanceMeta announce(String classId, AttendanceMeta meta) {
         Aclass aclass = aclassRepository.findById(classId).orElse(null);
@@ -163,9 +156,25 @@ public class TeacherService extends UserService {
     }
 
     /**
+     * Get real-time qr code for attendance with metaId.
+     * @param metaId the metaId of the attendance.
+     */
+    public String getAttendanceQR(String metaId) {
+        LocalDateTime now = LocalDateTime.now();
+        AttendanceMeta meta = attendanceMetaRepository.findById(metaId).orElse(null);
+        if (meta == null) {
+            return null;
+        }
+        if (now.isBefore(meta.getStart()) || now.isAfter(meta.getDeadline())) {
+            return null;
+        }
+        return QRCodeUtils.generateQRCode(metaId, 30L);  // 30 seconds alive
+    }
+
+    /**
      * Add a class to a teacher.
-     * @param teacherId
-     * @param aclass
+     * @param teacherId the ID of the teacher.
+     * @param aclass the class to be added.
      */
     public Aclass addClass(String teacherId, Aclass aclass) {
         Teacher teacher = teacherRepository.findById(teacherId).orElse(null);
@@ -178,8 +187,8 @@ public class TeacherService extends UserService {
 
     /**
      * Update class information.
-     * @param aclass
-     * @return
+     * @param aclass the class to be updated.
+     * @return the updated class.
      */
     public Aclass updateClass(Aclass aclass) {
         Aclass existingClass = aclassRepository.findById(aclass.getId()).orElse(null);
@@ -196,7 +205,7 @@ public class TeacherService extends UserService {
 
     /**
      * Update an announcement.
-     * @param meta
+     * @param meta the announcement to be updated.
      */
     public AttendanceMeta updateAttendanceMeta(AttendanceMeta meta) {
         AttendanceMeta existingMeta = attendanceMetaRepository.findById(meta.getId()).orElse(null);
@@ -212,7 +221,7 @@ public class TeacherService extends UserService {
 
     /**
      * Delete a class.
-     * @param id
+     * @param id the id of the class.
      */
     public void deleteClass(String id) {
         aclassRepository.deleteById(id);
@@ -220,7 +229,7 @@ public class TeacherService extends UserService {
 
     /**
      * Withdraw an announcement.
-     * @param id
+     * @param id the id of the announcement.
      */
     public void deleteAttendanceMeta(String id) {
         attendanceMetaRepository.deleteById(id);
@@ -228,8 +237,8 @@ public class TeacherService extends UserService {
 
     /**
      * Delete a student from a class.
-     * @param classId
-     * @param studentId
+     * @param classId the id of the class.
+     * @param studentId the id of the student.
      */
     public void deleteClassStudent(String classId, String studentId) {
         Enrollment enrollment = enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId);
