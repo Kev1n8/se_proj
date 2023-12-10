@@ -8,13 +8,11 @@ import com.codeisright.attendance.service.TeacherService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import org.slf4j.Logger;
@@ -71,7 +69,7 @@ public class LoginController {
     public Teacher registerTeacher(@RequestBody Teacher teacher) {
         try {
             logger.info("registering teacher: " + teacher.getUsername());
-            return teacherService.addTeacher(teacher);
+            return teacherService.registerTeacher(teacher);
         } catch (Exception e) {
             logger.info("registering teacher failed");
             return null;
@@ -79,7 +77,7 @@ public class LoginController {
     }
 
     @GetMapping("/register/teacher")
-    public String getRegTeacher(Model model) {
+    public String getRegTeacher() {
         return "hello, please register";
     }
 
