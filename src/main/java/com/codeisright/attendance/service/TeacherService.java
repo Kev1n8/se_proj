@@ -244,4 +244,15 @@ public class TeacherService extends UserService {
         Enrollment enrollment = enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId);
         enrollmentRepository.delete(enrollment);
     }
+
+    /**
+     * Check if the student is in the class.
+     * @param classId the id of the class.
+     * @param studentId the id of the student.
+     * @return true if the student in class, false otherwise.
+     */
+    public boolean isStudentInClass(String classId, String studentId) {
+        Enrollment enrollment = enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId);
+        return enrollment != null;
+    }
 }
