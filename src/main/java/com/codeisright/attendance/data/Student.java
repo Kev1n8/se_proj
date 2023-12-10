@@ -2,9 +2,11 @@ package com.codeisright.attendance.data;
 
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 
 @Entity
 public class Student implements UserDetails {
@@ -12,7 +14,7 @@ public class Student implements UserDetails {
     @Id
     private String id;
 
-    private String codedpassword;
+    private String password;
     private String name;
     private int age;
     private String gender;
@@ -20,25 +22,8 @@ public class Student implements UserDetails {
     private String description;
     protected Student() {}
 
-    public Student(String id, String studentName, String codedpassword, int age, String gender, String major, String studentClass) {
-        this.id = id;
-        this.name = studentName;
-        this.age = age;
-        this.gender = gender;
-        this.major = major;
-        this.description = studentClass;
-        this.codedpassword = codedpassword;
-    }
     public void setId(String stuId) {
         this.id = stuId;
-    }
-
-    public String getCodedpassword() {
-        return codedpassword;
-    }
-
-    public void setCodedpassword(String codedpassword) {
-        this.codedpassword = codedpassword;
     }
 
     public String getName() {
@@ -95,12 +80,14 @@ public class Student implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
+        GrantedAuthority authorities = new SimpleGrantedAuthority("ROLE_USER");
+        GrantedAuthority authorities1 = new SimpleGrantedAuthority("ROLE_STUDENT");
+        return List.of(authorities, authorities1);
     }
 
     @Override
     public String getPassword() {
-        return this.codedpassword;
+        return this.password;
     }
 
     @Override
