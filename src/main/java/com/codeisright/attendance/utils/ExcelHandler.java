@@ -10,12 +10,14 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
-public class ExcelGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(ExcelGenerator.class);
+public class ExcelHandler {
+    private static final Logger logger = LoggerFactory.getLogger(ExcelHandler.class);
 
     public static byte[] save(String path, List<AttendanceMeta> metas, List<List<List<StudentInfo>>> records){
         Workbook workbook = new XSSFWorkbook();// will save as .xlsx
@@ -55,5 +57,26 @@ public class ExcelGenerator {
             e.printStackTrace();
         }
         return toReturn;
+    }
+
+    public static List<String> getStudentIds(byte[] excelFile){
+        List<String> list = new ArrayList<>();
+        ByteArrayInputStream content = new ByteArrayInputStream(excelFile);
+        Workbook workbook = null;
+        try {
+            workbook = new XSSFWorkbook(content);
+        }catch (Exception e){
+            logger.error("Error occurred when parsing excel file", e);
+        }
+        assert workbook != null;
+        Sheet sheet = workbook.getSheetAt(0);
+        for (int i = 0; i < sheet.getRow(0).getLastCellNum(); i++) {
+            if (sheet.getRow(0).getCell(i).getStringCellValue().equals("学号")){
+                for (int j = 1; j <= sheet.getLastRowNum(); j++) {
+                    list.add(sheet.getRow(j).getCell(i).getStringCellValue());
+                }
+            }
+        }
+        return list;
     }
 }
