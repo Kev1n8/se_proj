@@ -3,7 +3,7 @@ package com.codeisright.attendance.service;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.*;
-import com.codeisright.attendance.utils.ExcelGenerator;
+import com.codeisright.attendance.utils.ExcelHandler;
 import com.codeisright.attendance.utils.QRCodeUtils;
 import com.codeisright.attendance.utils.RandomIdGenerator;
 import com.codeisright.attendance.view.StudentInfo;
@@ -136,7 +136,7 @@ public class TeacherService extends UserService {
             circumstances.add(getAttendanceCircumstance(classId, meta.getId()));
         }
         logger.info("Done collecting records for class with id: " + classId);
-        return ExcelGenerator.save(path, metas, circumstances);
+        return ExcelHandler.save(path, metas, circumstances);
     }
 
     /**
@@ -183,6 +183,19 @@ public class TeacherService extends UserService {
         }
         Aclass newClass = new Aclass(aclass);
         return aclassRepository.save(newClass);
+    }
+
+    /**
+     * Pour students into class by Excel file and flush all things about the class.
+     * Have to deal with potential problems like duplicate students, invalid students, etc.
+     * So, divided the students into three lists: valid, invalid(not exists in Student), duplicate.
+     * @param classId the classId of the class.
+     * @param file the Excel file.
+     */
+    public List<List<StudentInfo>> addClassStudentByExcel(String classId, byte[] file){
+        List<String> students2Add = ExcelHandler.getStudentIds(file);
+
+        return null;
     }
 
     /**
