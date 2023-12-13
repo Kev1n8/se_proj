@@ -17,6 +17,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -370,6 +371,27 @@ public class UserBehaviorController {
         logger.info("Add class request received");
         clazz = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
         return teacherService.getClassById(clazz.getId()) != null;
+    }
+
+    /**
+     * 导入Excel文件添加班级学生
+     * @param id 教师id
+     * @param classId 班级id
+     * @param file Excel文件
+     * @return 对应班级导入情况List<List<>>
+     */
+    @PostMapping("/teacher/classes/{classId}/postExcel")
+    @PreAuthorize("#id == authentication.principal.username")
+    public List<List<StudentInfo>> addClassStudentByExcel(@PathVariable String id, @PathVariable String classId, @RequestParam("file") MultipartFile file) {
+        logger.info("Add class student by excel request received");
+        if(!teacherService.getClassByTeacherId(id).contains(teacherService.getClassById(classId))){
+            return null;
+        }
+        try {
+            return teacherService.addClassStudentByExcel(classId, file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
