@@ -378,11 +378,11 @@ public class UserBehaviorController {
      * @param id 教师id
      * @param classId 班级id
      * @param file Excel文件
-     * @return 对应班级导入情况List<List<>>
+     * @return 对应班级导入情况 [[有效StudentInfo],[无效StudentId],[重复StudentInfo]]
      */
     @PostMapping("/teacher/classes/{classId}/postExcel")
     @PreAuthorize("#id == authentication.principal.username")
-    public List<List<StudentInfo>> addClassStudentByExcel(@PathVariable String id, @PathVariable String classId, @RequestParam("file") MultipartFile file) {
+    public List<Object> addClassStudentByExcel(@PathVariable String id, @PathVariable String classId, @RequestParam("file") MultipartFile file) {
         logger.info("Add class student by excel request received");
         if(!teacherService.getClassByTeacherId(id).contains(teacherService.getClassById(classId))){
             return null;
