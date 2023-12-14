@@ -1,5 +1,6 @@
 package com.codeisright.attendance.data;
 
+import com.codeisright.attendance.view.StudentInfo;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,6 +22,10 @@ public class Student implements UserDetails {
     private String major;
     private String description;
     protected Student() {}
+
+    public String getId() {
+        return null;
+    }
 
     public void setId(String stuId) {
         this.id = stuId;
@@ -113,5 +118,39 @@ public class Student implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public StudentInfo toStudentInfo(){
+        return new StudentInfo() {
+            @Override
+            public String getId() {
+                return Student.this.getId();
+            }
+
+            @Override
+            public String getName() {
+                return Student.this.getName();
+            }
+
+            @Override
+            public int getAge() {
+                return Student.this.getAge();
+            }
+
+            @Override
+            public String getGender() {
+                return Student.this.getGender();
+            }
+
+            @Override
+            public String getMajor() {
+                return Student.this.getMajor();
+            }
+
+            @Override
+            public String getDescription() {
+                return Student.this.getDescription();
+            }
+        };
     }
 }

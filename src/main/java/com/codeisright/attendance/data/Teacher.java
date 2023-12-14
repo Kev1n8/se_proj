@@ -1,5 +1,6 @@
 package com.codeisright.attendance.data;
 
+import com.codeisright.attendance.view.TeacherInfo;
 import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -123,5 +124,34 @@ public class Teacher implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public TeacherInfo toTeacherInfo(){
+        return new TeacherInfo() {
+            @Override
+            public String getId() {
+                return this.getId();
+            }
+
+            @Override
+            public String getName() {
+                return this.getName();
+            }
+
+            @Override
+            public int getAge() {
+                return this.getAge();
+            }
+
+            @Override
+            public String getGender() {
+                return this.getGender();
+            }
+
+            @Override
+            public String getDepartment() {
+                return this.getDepartment();
+            }
+        };
     }
 }
