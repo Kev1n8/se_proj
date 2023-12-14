@@ -188,14 +188,39 @@ public class TeacherService extends UserService {
     /**
      * Pour students into class by Excel file and flush all things about the class.
      * Have to deal with potential problems like duplicate students, invalid students, etc.
-     * So, divided the students into three lists: valid, invalid(not exists in Student), duplicate.
+     * So, divided the students into three lists: [valid], [invalid(not exists in Student)], [duplicate].
      * @param classId the classId of the class.
      * @param file the Excel file.
      */
-    public List<List<StudentInfo>> addClassStudentByExcel(String classId, byte[] file){
+    public List<Object> addClassStudentByExcel(String classId, byte[] file){
+        Aclass clazz = aclassRepository.findById(classId).orElse(null);
+        if (clazz==null){
+            return null;
+        }
+
+        List<StudentInfo> valid = new ArrayList<>();
+        List<String> invalid = new ArrayList<>();
+        List<StudentInfo> duplicate = new ArrayList<>();
         List<String> students2Add = ExcelHandler.getStudentIds(file);
 
-        return null;
+        for (String id : students2Add){
+            Student student2Add = studentRepository.findById(id).orElse(null);
+            if (student2Add == null){   // invalid
+                invalid.add(id);
+                continue;
+            }
+            StudentInfo info2Add = student2Add.toStudentInfo();
+            if (valid.contains(info2Add)){//work or not ???
+                if (!duplicate.contains(info2Add))
+                    duplicate.add(info2Add);
+            }
+            else{
+                Enrollment record = new Enrollment(student2Add, clazz);
+                enrollmentRepository.save(record);
+                valid.add(info2Add);
+            }
+        }
+        return List.of(valid, invalid, duplicate);
     }
 
     /**
