@@ -19,19 +19,13 @@ public class AttendanceMeta {
 
     private Long longitude;
 
+    private boolean notified = false;
+
     @ManyToOne
     @JoinColumn(name = "classId")
     private Aclass aclass;
 
     protected AttendanceMeta() {
-    }
-
-    public AttendanceMeta(int requirement, LocalDateTime start, LocalDateTime deadline, Aclass aclass, Long latitude, Long longitude) {
-        this.requirement = requirement;
-        this.start = start;
-        this.deadline = deadline;
-        this.aclass = aclass;
-        this.latitude = latitude;
     }
 
     public String getId() {
@@ -88,6 +82,14 @@ public class AttendanceMeta {
 
     public void setLongitude(Long longitude) {
         this.longitude = longitude;
+    }
+
+    public boolean isNotified() {
+        return notified;
+    }
+
+    public void setNotified(boolean notified) {
+        this.notified = notified;
     }
 
     @Override
