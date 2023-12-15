@@ -42,9 +42,10 @@ public class LoginController {
      * login and return token
      * @param dto user info
      * @param request  http request
+     * @return role
      */
     @PostMapping("/login")
-    public boolean login(@RequestBody UserDto dto, HttpServletResponse response, HttpServletRequest request) {
+    public String login(@RequestBody UserDto dto, HttpServletResponse response, HttpServletRequest request) {
         logger.info("login request received" + dto.toString());
         String id = dto.getId();
         String password = dto.getPassword();
@@ -61,7 +62,12 @@ public class LoginController {
                 .compact();
         response.addHeader("Authorization", "Bearer " + token);
         logger.info("login success");
-        return true;
+        return userDetails.getAuthorities().toArray()[0].toString();
+    }
+
+    @GetMapping("/login")
+    public String loginGet(){
+        return "test";
     }
 
     /**
@@ -75,7 +81,6 @@ public class LoginController {
             session.invalidate();
         }
     }
-
 
     @PostMapping("/register/teacher")
     public Teacher registerTeacher(@RequestBody Teacher teacher) {
