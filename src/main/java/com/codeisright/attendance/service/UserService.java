@@ -54,6 +54,7 @@ public class UserService {
      * @param studentId student id
      */
     public List<Aclass> getClassByStudentId(String studentId) {
+        logger.debug("Getting classes by studentId " + studentId);
         List<Enrollment> enrollments = enrollmentRepository.findAclassByStudent_Id(studentId);
         List<Aclass> classes = new ArrayList<>();
         for (Enrollment enrollment : enrollments) {
@@ -67,6 +68,7 @@ public class UserService {
      * @param id class id
      */
     public Aclass getClass(String id) {
+        logger.debug("Getting class with id " + id);
         return aclassRepository.findById(id).orElse(null);
     }
 
@@ -75,6 +77,7 @@ public class UserService {
      * @param classId class id
      */
     public List<StudentInfo> getClassStudents(String classId) {
+        logger.debug("Getting class with id " + classId);
         List<Enrollment> lis = enrollmentRepository.findStudentByAclass_Id(classId);
         List<StudentInfo> students = new ArrayList<>();
         for (Enrollment e : lis) {
@@ -90,6 +93,7 @@ public class UserService {
      * @return a page of students in a class.
      */
     public Page<StudentInfo> getClassStudentsPage(String classId, int page) {
+        logger.debug("Getting students in class " + classId + " of page " + page);
         List<StudentInfo> all = getClassStudents(classId);
         int start = page * 10;
         int end = Math.min(start + 10, all.size());
@@ -101,6 +105,7 @@ public class UserService {
      * @param studentId student id
      */
     public StudentInfo getStudentInfo(String studentId) {
+        logger.debug("Getting student with id " + studentId);
         return studentRepository.findStudentInfoById(studentId);
     }
 
@@ -110,6 +115,7 @@ public class UserService {
      */
     public byte[] getProfileAvatar(String teacherId) {
         // will return null if image not found. null then tell client to use default image
+        logger.debug("Getting avatar of teacher " + teacherId);
         return ImageUtils.getImageFromPath("src/main/resources/static/images/avatar/" + teacherId + ".jpg");
     }
 
@@ -119,6 +125,7 @@ public class UserService {
      * @param image the image bytes
      */
     public void saveAvatar(String id, byte[] image) {
+        logger.debug("Saving avatar of teacher " + id);
         ImageUtils.saveImage(image, "src/main/resources/static/images/avatar/" + id + ".jpg");
     }
 
@@ -127,6 +134,7 @@ public class UserService {
      * @param id teacher id
      */
     public Teacher getTeacherById(String id) {
+        logger.debug("Getting teacher with id " + id);
         return teacherRepository.findById(id).orElse(null);
     }
 
@@ -135,6 +143,7 @@ public class UserService {
      * @param metaId meta id
      */
     public AttendanceMeta getMetaByMetaId(String metaId) {
+        logger.debug("Getting meta with id " + metaId);
         return attendanceMetaRepository.findById(metaId).orElse(null);
     }
 
@@ -144,6 +153,7 @@ public class UserService {
      */
     public Course getClassCourse(String classId) {
         try {
+            logger.debug("Getting course of class " + classId);
             return Objects.requireNonNull(aclassRepository.findById(classId).orElse(null)).getCourse();
         } catch (NullPointerException e) {
             return null;
@@ -155,6 +165,7 @@ public class UserService {
      * @param classId the id of the class.
      */
     public Aclass getClassById(String classId) {
+        logger.debug("Getting class by classId " + classId);
         return aclassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Error finding class " +
                 "with id: " + classId));
     }
@@ -164,6 +175,7 @@ public class UserService {
      * @param teacherId the id of the teacher.
      */
     public TeacherInfo getTeacherByClassId(String teacherId) {
+        logger.debug("Getting teacher by class Id " + teacherId);
         return getClassById(teacherId).getTeacherInfo();
     }
 
@@ -172,6 +184,21 @@ public class UserService {
      * @param classId the id of the class.
      */
     public List<AttendanceMeta> getMetasByClassId(String classId) {
+        logger.debug("Getting all metas");
         return attendanceMetaRepository.findByAclass_Id(classId);
+    }
+
+    /**
+     * Get a page of Meta of a class. PageSize=10
+     * @param classId the id of the class.
+     * @param page the page number.
+     * @return a page of Meta of a class.
+     */
+    public Page<AttendanceMeta> getMetasByClassIdPage(String classId, int page) {
+        logger.debug("Getting metas by class Id. Page: " + page);
+        List<AttendanceMeta> all = getMetasByClassId(classId);
+        int start = page * 10;
+        int end = Math.min(start + 10, all.size());
+        return new PageImpl<>(all.subList(start, end), PageRequest.of(page, 10), all.size());
     }
 }
