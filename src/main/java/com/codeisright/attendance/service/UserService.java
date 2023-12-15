@@ -8,6 +8,9 @@ import com.codeisright.attendance.view.TeacherInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,7 +51,7 @@ public class UserService {
 
     /**
      * Get classes a student has been in.
-     * @param studentId
+     * @param studentId student id
      */
     public List<Aclass> getClassByStudentId(String studentId) {
         List<Enrollment> enrollments = enrollmentRepository.findAclassByStudent_Id(studentId);
@@ -61,7 +64,7 @@ public class UserService {
 
     /**
      * Get a class by its id or null if not exists.
-     * @param id
+     * @param id class id
      */
     public Aclass getClass(String id) {
         return aclassRepository.findById(id).orElse(null);
@@ -69,7 +72,7 @@ public class UserService {
 
     /**
      * Get a list of students in a class.
-     * @param classId
+     * @param classId class id
      */
     public List<StudentInfo> getClassStudents(String classId) {
         List<Enrollment> lis = enrollmentRepository.findStudentByAclass_Id(classId);
@@ -81,8 +84,21 @@ public class UserService {
     }
 
     /**
+     * Get page of students in a class.
+     * @param classId class id
+     * @param page page number
+     * @return a page of students in a class.
+     */
+    public Page<StudentInfo> getClassStudentsPage(String classId, int page) {
+        List<StudentInfo> all = getClassStudents(classId);
+        int start = page * 10;
+        int end = Math.min(start + 10, all.size());
+        return new PageImpl<>(all.subList(start, end), PageRequest.of(page, 10), all.size());
+    }
+
+    /**
      * Get a student by its id or null if not exists.
-     * @param studentId
+     * @param studentId student id
      */
     public StudentInfo getStudentInfo(String studentId) {
         return studentRepository.findStudentInfoById(studentId);
@@ -90,7 +106,7 @@ public class UserService {
 
     /**
      * Get bytes of a student's avatar or null if not exists.
-     * @param teacherId
+     * @param teacherId teacher id
      */
     public byte[] getProfileAvatar(String teacherId) {
         // will return null if image not found. null then tell client to use default image
@@ -99,8 +115,8 @@ public class UserService {
 
     /**
      * Save the image to the server.
-     * @param id
-     * @param image
+     * @param id the id of the teacher
+     * @param image the image bytes
      */
     public void saveAvatar(String id, byte[] image) {
         ImageUtils.saveImage(image, "src/main/resources/static/images/avatar/" + id + ".jpg");
@@ -108,7 +124,7 @@ public class UserService {
 
     /**
      * Get the teacher by its id or null if not exists.
-     * @param id
+     * @param id teacher id
      */
     public Teacher getTeacherById(String id) {
         return teacherRepository.findById(id).orElse(null);
@@ -116,7 +132,7 @@ public class UserService {
 
     /**
      * Get a Meta by its id or null if not exists.
-     * @param metaId
+     * @param metaId meta id
      */
     public AttendanceMeta getMetaByMetaId(String metaId) {
         return attendanceMetaRepository.findById(metaId).orElse(null);
@@ -124,7 +140,7 @@ public class UserService {
 
     /**
      * Get the course of a class.
-     * @param classId
+     * @param classId the id of the class.
      */
     public Course getClassCourse(String classId) {
         try {
@@ -136,7 +152,7 @@ public class UserService {
 
     /**
      * Get the class by its id.
-     * @param classId
+     * @param classId the id of the class.
      */
     public Aclass getClassById(String classId) {
         return aclassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Error finding class " +
@@ -145,7 +161,7 @@ public class UserService {
 
     /**
      * Get the teacher of a class.
-     * @param teacherId
+     * @param teacherId the id of the teacher.
      */
     public TeacherInfo getTeacherByClassId(String teacherId) {
         return getClassById(teacherId).getTeacherInfo();
@@ -153,7 +169,7 @@ public class UserService {
 
     /**
      * Get the list of Meta of a class.
-     * @param classId
+     * @param classId the id of the class.
      */
     public List<AttendanceMeta> getMetasByClassId(String classId) {
         return attendanceMetaRepository.findByAclass_Id(classId);
