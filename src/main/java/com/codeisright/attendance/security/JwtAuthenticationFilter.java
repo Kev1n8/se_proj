@@ -38,29 +38,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
-                logger.debug("Start parsing...");
+                logger.info("Start parsing...");
                 Claims claims = Jwts.parser()
-                                    .setSigningKey(secretKey.getBytes())
-                                    .parseClaimsJws(token)
-                                    .getBody();
+                        .setSigningKey(secretKey.getBytes())
+                        .parseClaimsJws(token)
+                        .getBody();
                 Instant expirationTime = claims.getExpiration().toInstant();
-                if (expirationTime.isBefore(Instant.now())){
+                if (expirationTime.isBefore(Instant.now())) {
                     throw new ExpiredJwtException(null, claims, "JWT has expired.");
                 }
                 String username = claims.getSubject();
-                logger.debug("username: " + username);
-                if (username != null) {
-                    Collection<? extends GrantedAuthority> authorities = userDetailsService.getAuthoritiesById(username);
-                    UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, authorities);
-                    SecurityContextHolder.getContext().setAuthentication(auth);
-                    logger.debug("authentication success");
+                logger.info("username: " + username);
+
+                String expectedToken = userDetailsService.getJwt(username);
+                if (!token.equals(expectedToken)) {
+                    throw new Exception("Invalid token");
                 }
+
+                // Authorization
+                Collection<? extends GrantedAuthority> authorities = userDetailsService.getAuthoritiesById(username);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null,
+                        authorities);
+                SecurityContextHolder.getContext().setAuthentication(auth);
+                logger.debug("authentication success");
             } catch (Exception e) {
                 SecurityContextHolder.clearContext();
                 logger.error("authentication failed" + e.getMessage());
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }
