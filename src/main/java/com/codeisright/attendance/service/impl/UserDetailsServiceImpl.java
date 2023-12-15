@@ -1,6 +1,8 @@
 package com.codeisright.attendance.service.impl;
 
+import com.codeisright.attendance.data.Jwt;
 import com.codeisright.attendance.data.Teacher;
+import com.codeisright.attendance.repository.JwtRepository;
 import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
 import org.slf4j.Logger;
@@ -18,11 +20,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
     private final TeacherService teacherService;
     private final StudentService studentService;
+    private final JwtRepository jwtRepository;
 
     @Autowired
-    public UserDetailsServiceImpl(TeacherService teacherService, StudentService studentService) {
+    public UserDetailsServiceImpl(TeacherService teacherService, StudentService studentService, JwtRepository jwtRepository) {
         this.teacherService = teacherService;
         this.studentService = studentService;
+        this.jwtRepository = jwtRepository;
     }
 
     @Override
@@ -41,5 +45,18 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             return studentService.getStudentById(id).getAuthorities();
         else
             return teacher.getAuthorities();
+    }
+
+    public void saveJwt(String id, String jwt) {
+        logger.info("Saving jwt for id: " + id);
+        jwtRepository.save(new Jwt(id, jwt));
+    }
+
+    public void deleteJwt(String id) {
+        jwtRepository.deleteById(id);
+    }
+
+    public String getJwt(String id) {
+        return jwtRepository.findById(id).orElseThrow().getToken();
     }
 }
