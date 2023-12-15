@@ -293,4 +293,18 @@ public class TeacherService extends UserService {
         Enrollment enrollment = enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId);
         return enrollment != null;
     }
+
+    /**
+     * Check if there are notification to send.  not notified and finished
+     * @param classId id of the class
+     * @return true if there are notification to send, false otherwise.
+     */
+    public AttendanceMeta getNotification(String classId) {
+        AttendanceMeta toNotify = attendanceMetaRepository.findFirstByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(classId, LocalDateTime.now());
+        if (toNotify==null)
+            return null;
+        toNotify.setNotified(true);
+        attendanceMetaRepository.save(toNotify);
+        return toNotify;
+    }
 }
