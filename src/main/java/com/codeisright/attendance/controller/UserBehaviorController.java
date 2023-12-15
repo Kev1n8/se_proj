@@ -42,7 +42,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/getProfile")
     @PreAuthorize("#id == authentication.principal.username")
     public TeacherInfo getTeacherProfile(@PathVariable String id) {
-        logger.debug("Get teacher profile request received");
+        logger.info("Get teacher profile request received");
         return teacherService.getTeacherInfoById(id);
     }
 
@@ -55,7 +55,7 @@ public class UserBehaviorController {
     @PostMapping("/teacher/setAvatar")
     @PreAuthorize("#id == authentication.principal.username")
     public String setTeacherAvatar(@PathVariable String id, @RequestParam("avatar") MultipartFile avatar) {
-        logger.debug("Set teacher avatar request received");
+        logger.info("Set teacher avatar request received");
         try {
             teacherService.saveAvatar(id, avatar.getBytes());
         } catch (Exception e) {
@@ -87,7 +87,7 @@ public class UserBehaviorController {
     @GetMapping("/getTeacherAvatar/{teacherId}")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Resource> getTeacherAvatar(@PathVariable String id, @PathVariable String teacherId) {
-        logger.debug("Get teacher avatar request received");
+        logger.info("Get teacher avatar request received");
         byte[] avatarBytes = teacherService.getProfileAvatar(teacherId);
 
         if (avatarBytes == null || avatarBytes.length == 0) {
@@ -118,7 +118,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/classes")
     @PreAuthorize("#id == authentication.principal.username")
     public List<Aclass> getTeacherClasses(@PathVariable String id) {
-        logger.debug("Get teacher classes request received");
+        logger.info("Get teacher classes request received");
         return teacherService.getClassByTeacherId(id);
     }
 
@@ -130,7 +130,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
     public Aclass getTeacherClass(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Get teacher class request received");
+        logger.info("Get teacher class request received");
         return teacherService.getClass(classId);
     }
 
@@ -142,7 +142,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/classes/{classId}/course")
     @PreAuthorize("#id == authentication.principal.username")
     public Course getClassCourse(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Get class course request received");
+        logger.info("Get class course request received");
         return teacherService.getClassCourse(classId);
     }
 
@@ -156,7 +156,7 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public Page<StudentInfo> getTeacherClassStudents(@PathVariable String id, @PathVariable String classId,
                                                      @RequestParam(defaultValue = "0") int page) {
-        logger.debug("Get class students request received");
+        logger.info("Get class students request received");
         return teacherService.getClassStudentsPage(classId, page);
     }
 
@@ -169,7 +169,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/classes/{classId}/students/{studentId}")
     @PreAuthorize("#id == authentication.principal.username")
     public StudentInfo getStudent(@PathVariable String id, @PathVariable String studentId) {
-        logger.debug("Get student request received");
+        logger.info("Get student request received");
         return teacherService.getStudentInfo(studentId);
     }
 
@@ -184,7 +184,7 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public Page<AttendanceMeta> getMetaList(@PathVariable String id, @PathVariable String classId,
                                             @RequestParam(defaultValue = "0") int page) {
-        logger.debug("Get meta list request received");
+        logger.info("Get meta list request received");
         return teacherService.getMetasByClassIdPage(classId, page);
     }
 
@@ -197,7 +197,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
     public AttendanceMeta getAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
-        logger.debug("Get meta request received");
+        logger.info("Get meta request received");
         return teacherService.getMetaByMetaId(metaId);
     }
 
@@ -210,7 +210,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/meta/{metaId}/qr")
     @PreAuthorize("#id == authentication.principal.username")
     public String getAttendanceQr(@PathVariable String id, @PathVariable String metaId) {
-        logger.debug("Get attendance QR request received");
+        logger.info("Get attendance QR request received");
         return teacherService.getAttendanceQR(metaId);
     }
 
@@ -225,7 +225,7 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public List<List<StudentInfo>> getAttendanceCircumstance(@PathVariable String id, @PathVariable String classId,
                                                              @PathVariable String metaId) {
-        logger.debug("Get attendance circumstance request received");
+        logger.info("Get attendance circumstance request received");
         return teacherService.getAttendanceCircumstance(classId, metaId);
     }
 
@@ -238,7 +238,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/classes/{classId}/getExcel")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Resource> getAttendanceExcel(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Get attendance excel request received");
+        logger.info("Get attendance excel request received");
         byte[] excelBytes = teacherService.getClassExcel(classId);
         if (excelBytes == null || excelBytes.length == 0) {
             return ResponseEntity.noContent().build();
@@ -261,7 +261,7 @@ public class UserBehaviorController {
     @PostMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
     public Aclass addClass(@PathVariable String id, @RequestBody Aclass aclass) {
-        logger.debug("Add class request received");
+        logger.info("Add class request received");
         return teacherService.addClass(id, aclass);
     }
 
@@ -274,23 +274,8 @@ public class UserBehaviorController {
     @PostMapping("/teacher/register")
     @PreAuthorize("#id == authentication.principal.username")
     public Teacher addTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
-        logger.debug("Add teacher request received");
+        logger.info("Add teacher request received");
         return teacherService.addTeacher(teacher);
-    }
-
-    /**
-     * 获取班级所有签到记录
-     *
-     * @param id      教师id
-     * @param classId 班级id
-     * @param meta    签到记录
-     */
-    @PostMapping("/teacher/classes/{classId}/meta")
-    @PreAuthorize("#id == authentication.principal.username")
-    public AttendanceMeta attendanceMeta(@PathVariable String id, @PathVariable String classId,
-                                         @RequestBody AttendanceMeta meta) {
-        logger.debug("Add meta request received");
-        return teacherService.announce(classId, meta);
     }
 
     /**
@@ -301,7 +286,7 @@ public class UserBehaviorController {
     @PutMapping("/teacher")
     @PreAuthorize("#id == authentication.principal.username")
     public Teacher updateTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
-        logger.debug("Update teacher request received");
+        logger.info("Update teacher request received");
         return teacherService.updateTeacher(teacher);
     }
 
@@ -314,7 +299,7 @@ public class UserBehaviorController {
     @PostMapping("/teacher/uploadAvatar")
     @PreAuthorize("#id == authentication.principal.username")
     public String uploadAvatar(@PathVariable String id, @RequestParam("file") MultipartFile file) {
-        logger.debug("Upload avatar request received");
+        logger.info("Upload avatar request received");
         try {
             teacherService.saveAvatar(id, file.getBytes());
         } catch (Exception e) {
@@ -335,7 +320,7 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public AttendanceMeta announce(@PathVariable String id, @PathVariable String classId,
                                    @RequestBody AttendanceMeta meta) {
-        logger.debug("Announce request received");
+        logger.info("Announce request received");
         return teacherService.announce(classId, meta);
     }
 
@@ -348,7 +333,7 @@ public class UserBehaviorController {
     @PutMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
     public Aclass updateClass(@PathVariable String id, @RequestBody Aclass aclass) {
-        logger.debug("Update class request received");
+        logger.info("Update class request received");
         return teacherService.updateClass(aclass);
     }
 
@@ -361,7 +346,7 @@ public class UserBehaviorController {
     @PutMapping("/teacher/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
     public AttendanceMeta updateAttendanceMeta(@PathVariable String id, @RequestBody AttendanceMeta meta) {
-        logger.debug("Update meta request received");
+        logger.info("Update meta request received");
         return teacherService.updateAttendanceMeta(meta);
     }
 
@@ -373,7 +358,7 @@ public class UserBehaviorController {
     @DeleteMapping("/teacher")
     @PreAuthorize("#id == authentication.principal.username")
     public boolean deleteTeacher(@PathVariable String id) {
-        logger.debug("Delete teacher request received");
+        logger.info("Delete teacher request received");
         teacherService.deleteTeacher(id);
         return teacherService.getTeacherById(id) == null;
     }
@@ -387,7 +372,7 @@ public class UserBehaviorController {
     @DeleteMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
     public boolean deleteClass(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Delete class request received");
+        logger.info("Delete class request received");
         teacherService.deleteClass(classId);
         return teacherService.getClassById(classId) == null;
     }
@@ -401,7 +386,7 @@ public class UserBehaviorController {
     @DeleteMapping("/teacher/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
     public boolean deleteAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
-        logger.debug("Delete meta request received");
+        logger.info("Delete meta request received");
         teacherService.deleteAttendanceMeta(metaId);
         return teacherService.getMetaByMetaId(metaId) == null;
     }
@@ -415,7 +400,7 @@ public class UserBehaviorController {
     @PostMapping("/teacher/classes")
     @PreAuthorize("#id == authentication.principal.username")
     public boolean addClassStudent(@PathVariable String id, @RequestBody Aclass clazz) {
-        logger.debug("Add class request received");
+        logger.info("Add class request received");
         clazz = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
         return teacherService.getClassById(clazz.getId()) != null;
     }
@@ -432,7 +417,7 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public List<Object> addClassStudentByExcel(@PathVariable String id, @PathVariable String classId, @RequestParam(
             "file") MultipartFile file) {
-        logger.debug("Add class student by excel request received");
+        logger.info("Add class student by excel request received");
         if (!teacherService.getClassByTeacherId(id).contains(teacherService.getClassById(classId))) {
             return null;
         }
@@ -454,7 +439,7 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public boolean deleteClassStudent(@PathVariable String id, @PathVariable String classId,
                                       @PathVariable String studentId) {
-        logger.debug("Delete class student request received");
+        logger.info("Delete class student request received");
         teacherService.deleteClassStudent(classId, studentId);
         return !teacherService.isStudentInClass(classId, studentId);
     }
@@ -467,7 +452,7 @@ public class UserBehaviorController {
     @GetMapping("/teacher/notification/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
     public AttendanceMeta getNotification(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Get notification request received");
+        logger.info("Get notification request received");
         return teacherService.getNotification(classId);
     }
 
@@ -482,7 +467,7 @@ public class UserBehaviorController {
     @GetMapping("/student/getProfile")
     @PreAuthorize("#id == authentication.principal.username")
     public StudentInfo getStudentProfile(@PathVariable String id) {
-        logger.debug("Get student profile request received");
+        logger.info("Get student profile request received");
         return studentService.getStudentInfoById(id);
     }
 
@@ -495,7 +480,7 @@ public class UserBehaviorController {
     @PostMapping("/student/setAvatar")
     @PreAuthorize("#id == authentication.principal.username")
     public String setStudentAvatar(@PathVariable String id, @RequestParam("avatar") MultipartFile avatar) {
-        logger.debug("Set student avatar request received");
+        logger.info("Set student avatar request received");
         try {
             studentService.saveAvatar(id, avatar.getBytes());
         } catch (Exception e) {
@@ -513,7 +498,7 @@ public class UserBehaviorController {
     @GetMapping("/getStudentAvatar/{studentId}")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Resource> getStudentAvatar(@PathVariable String id, @PathVariable String studentId) {
-        logger.debug("Get student avatar request received");
+        logger.info("Get student avatar request received");
         byte[] avatarBytes = studentService.getProfileAvatar(studentId);
 
         if (avatarBytes == null || avatarBytes.length == 0) {
@@ -544,7 +529,7 @@ public class UserBehaviorController {
     @GetMapping("/student/classes/{classId}/course")
     @PreAuthorize("#id == authentication.principal.username")
     public Course getStudentClassCourse(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Get student class course request received");
+        logger.info("Get student class course request received");
         return studentService.getClassCourse(classId);
     }
 
@@ -556,7 +541,7 @@ public class UserBehaviorController {
     @GetMapping("/student/classes")
     @PreAuthorize("#id == authentication.principal.username")
     public List<Aclass> getStudentClasses(@PathVariable String id) {
-        logger.debug("Get student classes request received");
+        logger.info("Get student classes request received");
         return studentService.getClassByStudentId(id);
     }
 
@@ -570,12 +555,12 @@ public class UserBehaviorController {
     @GetMapping("/student/classes/{classId}/students")
     @PreAuthorize("#id == authentication.principal.username")
 //    public List<StudentInfo> getStudentClassStudents(@PathVariable String id, @PathVariable String classId) {
-//        logger.debug();("Get student class students request received");
+//        logger.info();("Get student class students request received");
 //        return studentService.getClassStudents(classId);
 //    }
     public Page<StudentInfo> getStudentClassStudents(@PathVariable String id, @PathVariable String classId,
                                                      @RequestParam(value = "page", defaultValue = "0") int page) {
-        logger.debug("Get student class students request received");
+        logger.info("Get student class students request received");
         return studentService.getClassStudentsPage(classId, page);
     }
 
@@ -587,7 +572,7 @@ public class UserBehaviorController {
     @GetMapping("/student/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
     public Aclass getStudentClass(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Get student class request received");
+        logger.info("Get student class request received");
         return studentService.getClassById(classId);
     }
 
@@ -599,7 +584,7 @@ public class UserBehaviorController {
     @GetMapping("/student/classes/{classId}/teacher")
     @PreAuthorize("#id == authentication.principal.username")
     public TeacherInfo getStudentClassTeacher(@PathVariable String id, @PathVariable String classId) {
-        logger.debug("Get student class teacher request received");
+        logger.info("Get student class teacher request received");
         return studentService.getTeacherByClassId(classId);
     }
 
@@ -614,7 +599,7 @@ public class UserBehaviorController {
     @PreAuthorize("#id == authentication.principal.username")
     public Page<AttendanceMeta> getStudentAttendanceMeta(@PathVariable String id, @PathVariable String classId,
                                                          @RequestParam(value = "page", defaultValue = "0") int page) {
-        logger.debug("Get student class attendance meta request received");
+        logger.info("Get student class attendance meta request received");
         return studentService.getMetasByClassIdPage(classId, page);
     }
 
@@ -627,7 +612,7 @@ public class UserBehaviorController {
     @GetMapping("/student/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
     public Attendance getStudentClassMetaRecord(@PathVariable String id, @PathVariable String metaId) {
-        logger.debug("Get student class meta record request received");
+        logger.info("Get student class meta record request received");
         return studentService.getAttendanceByStudentAndMeta(id, metaId);
     }
 
@@ -640,7 +625,7 @@ public class UserBehaviorController {
     @PostMapping("/student/checkin1")
     @PreAuthorize("#id == authentication.principal.username")
     public boolean checkin1(@PathVariable String id, @RequestBody Attendance attendance) {
-        logger.debug("Student checkin1 request received");
+        logger.info("Student checkin1 request received");
         String classId = attendance.getAclass().getId();
         return studentService.doCheckin(id, classId, 1);
     }
@@ -654,7 +639,7 @@ public class UserBehaviorController {
     @PutMapping("/student/checkin2")
     @PreAuthorize("#id == authentication.principal.username")
     public boolean checkin2(@PathVariable String id, @RequestBody Attendance attendance) {
-        logger.debug("Student checkin2 request received");
+        logger.info("Student checkin2 request received");
         String classId = attendance.getAclass().getId();
         Long Latitude = attendance.getLatitude();
         Long Longitude = attendance.getLongitude();
@@ -671,7 +656,7 @@ public class UserBehaviorController {
     @PutMapping("/student/checkin3")
     @PreAuthorize("#id == authentication.principal.username")
     public boolean checkin3(@PathVariable String id, @RequestBody Attendance attendance, @RequestParam String QRCode) {
-        logger.debug("Student checkin3 request received");
+        logger.info("Student checkin3 request received");
         String classId = attendance.getAclass().getId();
         return studentService.doQR(id, classId, QRCode);
     }
