@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -141,12 +142,13 @@ public class UserBehaviorController {
     /**
      * 教师获取班级学生列表
      * @param classId 班级id
+     * @return 学生列表
      */
     @GetMapping("/teacher/classes/{classId}/students")
     @PreAuthorize("#id == authentication.principal.username")
-    public List<StudentInfo> getTeacherClassStudents(@PathVariable String id, @PathVariable String classId) {
+    public Page<StudentInfo> getTeacherClassStudents(@PathVariable String id, @PathVariable String classId, @RequestParam(defaultValue = "0") int page) {
         logger.info("Get class students request received");
-        return teacherService.getClassStudents(classId);
+        return teacherService.getClassStudentsPage(classId, page);
     }
 
     /**
@@ -296,6 +298,19 @@ public class UserBehaviorController {
 
         }
         return "redirect:/uploadSuccess";
+    }
+
+    /**
+     * 发布签到
+     * @param id 教师id
+     * @param meta 签到记录
+     * @return 签到记录
+     */
+    @PostMapping("/teacher/classes/{classId}/meta")
+    @PreAuthorize("#id == authentication.principal.username")
+    public AttendanceMeta announce(@PathVariable String id, @PathVariable String classId, @RequestBody AttendanceMeta meta) {
+        logger.info("Announce request received");
+        return teacherService.announce(classId, meta);
     }
 
     /**
