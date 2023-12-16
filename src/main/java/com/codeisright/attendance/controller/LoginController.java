@@ -45,40 +45,49 @@ public class LoginController {
      * login and return token
      * @param dto user info
      * @param request  http request
-     * @return role
      */
     @PostMapping("/login")
-    public String login(@RequestBody UserDto dto, HttpServletResponse response, HttpServletRequest request) {
+    public void login(@RequestBody UserDto dto, HttpServletResponse response, HttpServletRequest request) {
         logger.info("login request received" + dto.toString());
+
         String id = dto.getId();
         String password = dto.getPassword();
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(id, password);
         String role;
+
         try {
-            Authentication authentication = authenticationManager.authenticate(authenticationToken);
+            Authentication authentication = authenticationManager.authenticate(authenticationToken);  // if the password is wrong, the authentication will fail and the program will not reach here
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
             SecurityContextHolder.getContext().setAuthentication(authentication);
             HttpSession session = request.getSession(true);
             session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, SecurityContextHolder.getContext());
+
             String token = Jwts.builder()
                     .setSubject(userDetails.getUsername())
                     .setExpiration(new Date(System.currentTimeMillis() + 864000000)) // 10 days
                     .signWith(SignatureAlgorithm.HS512, "secret".getBytes())
                     .compact();
             response.addHeader("Authorization", "Bearer " + token);
-
             role = userDetails.getAuthorities().toArray()[1].toString();
+            try {
+                response.getWriter().write("{\"userId\":\"" + id + "\",\"role\":\"" + role +"\",\"status\":\"ok\",\"msg\":\"Login success\"}");
+            } catch (Exception e) {
+                logger.error("error writing response:" + e);
+            }
+
             // write to redis
             userDetailsService.saveJwt(id, token);
         }
         catch (Exception e) {
             logger.error("login failed:" + e);
-            return "login failed";
+            try {
+                response.getWriter().write("{\"userId\":\"" + id + "\",\"status\":\"error\",\"msg\":\"Login failed\"}");
+            } catch (Exception ex) {
+                logger.error("error writing response:" + ex);
+            }
         }
-
-
         logger.info("login success");
-        return role;  // if the password is wrong, the authentication will fail and the program will not reach here
     }
 
     @GetMapping("/login")
@@ -87,12 +96,17 @@ public class LoginController {
     }
 
     @PostMapping("/register/teacher")
-    public Teacher registerTeacher(@RequestBody Teacher teacher) {
+    public Teacher registerTeacher(@RequestBody Teacher teacher, HttpServletResponse response) {
         try {
             logger.info("registering teacher: " + teacher.getUsername());
             return teacherService.registerTeacher(teacher);
         } catch (Exception e) {
             logger.info("registering teacher failed");
+            try {
+                response.getWriter().write("{\"status\":\"error\",\"msg\":\"Register failed\"}");
+            } catch (Exception ex) {
+                logger.error("error writing response:" + ex);
+            }
             return null;
         }
     }
@@ -103,12 +117,17 @@ public class LoginController {
     }
 
     @PostMapping("/register/student")
-    public Student registerStudent(@RequestBody Student student) {
+    public Student registerStudent(@RequestBody Student student, HttpServletResponse response) {
         try {
             logger.info("registering student: " + student.getUsername());
             return studentService.registerStudent(student);
         } catch (Exception e) {
             logger.info("registering student failed");
+            try {
+                response.getWriter().write("{\"status\":\"error\",\"msg\":\"Register failed\"}");
+            } catch (Exception ex) {
+                logger.error("error writing response:" + ex);
+            }
             return null;
         }
     }
