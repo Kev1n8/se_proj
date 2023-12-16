@@ -33,8 +33,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        logger.debug("Reques Header parsing..." + request.getHeaderNames());
         String header = request.getHeader("Authorization");
-        logger.info("header: " + header);
+        logger.info("Header: " + header);
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
             try {
@@ -57,6 +58,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // Authorization
                 Collection<? extends GrantedAuthority> authorities = userDetailsService.getAuthoritiesById(username);
+
+                logger.info("authorities giving: " + authorities);
                 UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null,
                         authorities);
                 SecurityContextHolder.getContext().setAuthentication(auth);
