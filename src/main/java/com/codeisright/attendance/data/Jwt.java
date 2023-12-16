@@ -1,10 +1,12 @@
 package com.codeisright.attendance.data;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.redis.core.RedisHash;
 
-@Entity
-public class Jwt {
+import java.io.Serializable;
+
+@RedisHash("Jwt")
+public class Jwt implements Serializable {
     @Id
     private String id;
     private String token;
@@ -17,7 +19,7 @@ public class Jwt {
     }
 
     public String getId() {
-        return null;
+        return id;
     }
 
     public void setId(String id) {
@@ -25,7 +27,7 @@ public class Jwt {
     }
 
     public String getToken() {
-        return null;
+        return token;
     }
 
     public void setToken(String token) {
