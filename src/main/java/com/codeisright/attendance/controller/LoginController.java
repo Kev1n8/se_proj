@@ -72,7 +72,7 @@ public class LoginController {
             userDetailsService.saveJwt(id, token);
         }
         catch (Exception e) {
-            logger.info("login failed");
+            logger.error("login failed:" + e);
             return "login failed";
         }
 
@@ -84,17 +84,6 @@ public class LoginController {
     @GetMapping("/login")
     public String loginGet(){
         return "test";
-    }
-
-    /**
-     * logout
-     */
-    @GetMapping("/logout")
-    public String logout(HttpServletRequest request) {
-        logger.info("logout request received");
-        String token = request.getHeader("Authorization").substring(7);
-        userDetailsService.deleteJwt(token);
-        return "redirect:/login";
     }
 
     @PostMapping("/register/teacher")
