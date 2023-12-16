@@ -46,10 +46,12 @@ public class ApplicationSecurity extends SecurityConfigurerAdapter<DefaultSecuri
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         //TODO: make sure the security and the Controllers working together
         http.addFilterBefore(new JwtAuthenticationFilter("secret", userDetailsService), UsernamePasswordAuthenticationFilter.class)
+                .logout(logout -> logout
+                        .logoutSuccessUrl("/login")
+                        .logoutSuccessHandler(new JwtLogoutSuccessHandler(userDetailsService)))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/register/**").permitAll()
                         .requestMatchers("/login").permitAll()
-                        .requestMatchers("/logout").hasRole("USER")
                         .requestMatchers("/usr/{id}/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/usr/{id}/student/**").hasRole("STUDENT")
                         .anyRequest().authenticated()
