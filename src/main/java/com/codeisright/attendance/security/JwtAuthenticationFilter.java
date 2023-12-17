@@ -33,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        logger.debug("Reques Header parsing..." + request.getHeaderNames());
+        logger.debug("Request Header parsing..." + request.getHeaderNames());
         String header = request.getHeader("Authorization");
         logger.info("Header: " + header);
         if (header != null && header.startsWith("Bearer ")) {
@@ -66,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 logger.debug("authentication success");
             } catch (Exception e) {
                 SecurityContextHolder.clearContext();
-                logger.error("authentication failed" + e.getMessage());
+                logger.error("authentication failed " + e.getMessage());
             }
         }
         filterChain.doFilter(request, response);
