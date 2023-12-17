@@ -57,6 +57,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     public String getJwt(String id) {
-        return jwtRepository.findById(id).orElseThrow().getToken();
+        return jwtRepository.findById(id).map(Jwt::getToken).orElse(null);
     }
 }
