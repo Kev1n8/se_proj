@@ -70,6 +70,7 @@ public class LoginController {
                     .signWith(SignatureAlgorithm.HS512, "secret".getBytes())
                     .compact();
             response.addHeader("Authorization", "Bearer " + token);
+            response.setHeader("Access-Control-Expose-Headers", "Authorization");
             role = userDetails.getAuthorities().toArray()[1].toString();
             response.getWriter().write("{\"userId\":\"" + id + "\",\"role\":\"" + role +"\",\"status\":\"ok\",\"msg\":\"Login success\"}");
 
