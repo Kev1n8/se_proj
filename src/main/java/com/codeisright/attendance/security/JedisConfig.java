@@ -15,7 +15,8 @@ import java.time.Duration;
 public class JedisConfig {
 //    @Bean
 //    JedisConnectionFactory jedisConnectionFactory() {
-//        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration("localhost", 6379);
+//        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration("localhost",
+//        6379);
 ////        redisStandaloneConfiguration.setPassword(RedisPassword.of(""));
 //        return new JedisConnectionFactory(redisStandaloneConfiguration);
 //    }
@@ -31,7 +32,11 @@ public class JedisConfig {
     @Bean
     public LettuceConnectionFactory lettuceConnectionFactory() {
         // 创建RedisStandaloneConfiguration
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration("localhost", 6379);
+        // host来自环境变量
+        String host = System.getenv("REDIS_HOST");
+        if (host == null)
+            host = "localhost";
+        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration(host, 6379);
         // 创建LettuceClientConfiguration
         LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
                 .commandTimeout(Duration.ofSeconds(60))
