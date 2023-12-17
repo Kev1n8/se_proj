@@ -23,6 +23,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.Date;
 
 @RestController
@@ -47,7 +48,7 @@ public class LoginController {
      * @param request  http request
      */
     @PostMapping("/login")
-    public void login(@RequestBody UserDto dto, HttpServletResponse response, HttpServletRequest request) {
+    public void login(@RequestBody UserDto dto, HttpServletResponse response, HttpServletRequest request) throws IOException {
         logger.info("login request received" + dto.toString());
 
         String id = dto.getId();
@@ -70,22 +71,14 @@ public class LoginController {
                     .compact();
             response.addHeader("Authorization", "Bearer " + token);
             role = userDetails.getAuthorities().toArray()[1].toString();
-            try {
-                response.getWriter().write("{\"userId\":\"" + id + "\",\"role\":\"" + role +"\",\"status\":\"ok\",\"msg\":\"Login success\"}");
-            } catch (Exception e) {
-                logger.error("error writing response:" + e);
-            }
+            response.getWriter().write("{\"userId\":\"" + id + "\",\"role\":\"" + role +"\",\"status\":\"ok\",\"msg\":\"Login success\"}");
 
             // write to redis
             userDetailsService.saveJwt(id, token);
         }
         catch (Exception e) {
             logger.error("login failed:" + e);
-            try {
-                response.getWriter().write("{\"userId\":\"" + id + "\",\"status\":\"error\",\"msg\":\"Login failed\"}");
-            } catch (Exception ex) {
-                logger.error("error writing response:" + ex);
-            }
+            response.getWriter().write("{\"userId\":\"" + id + "\",\"status\":\"error\",\"msg\":\"Login failed\"}");
         }
         logger.info("login success");
     }
