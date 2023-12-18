@@ -1,6 +1,7 @@
 package com.codeisright.attendance.controller;
 
 import com.codeisright.attendance.cache.AclassDto;
+import com.codeisright.attendance.cache.AttendanceDto;
 import com.codeisright.attendance.cache.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.service.StudentService;
@@ -122,9 +123,10 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes")
     @PreAuthorize("#id == authentication.principal.username")
-    public List<Aclass> getTeacherClasses(@PathVariable String id) {
+    public List<AclassDto> getTeacherClasses(@PathVariable String id) {
         logger.info("Get teacher classes request received");
-        return teacherService.getClassByTeacherId(id);
+        List<Aclass> toReturn = teacherService.getClassByTeacherId(id);
+        return AclassDto.Convert(toReturn);
     }
 
     /**
@@ -616,29 +618,31 @@ public class UserBehaviorController {
 
     /**
      * 签到码签到，插入Status为1的记录到Attendance表中
+     * 第一次签到需要的信息：学生id，班级id，签到码，签到时间
      *
      * @param id         学生id
      * @param attendance 签到信息
      */
     @PostMapping("/student/checkin1")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean checkin1(@PathVariable String id, @RequestBody Attendance attendance) {
+    public boolean checkin1(@PathVariable String id, @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin1 request received");
-        String classId = attendance.getAclass().getId();
+        String classId = attendance.getClassId();
         return studentService.doCheckin(id, classId, 1);
     }
 
     /**
      * 地理位置签到，将检查地理位置是否满足要求，满足则更新Attendance表中的Status为2和Location
+     * 第二次签到需要的信息：学生id，班级id，经度，纬度，签到时间
      *
      * @param id         学生id
      * @param attendance 签到信息
      */
     @PutMapping("/student/checkin2")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean checkin2(@PathVariable String id, @RequestBody Attendance attendance) {
+    public boolean checkin2(@PathVariable String id, @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin2 request received");
-        String classId = attendance.getAclass().getId();
+        String classId = attendance.getClassId();
         Long Latitude = attendance.getLatitude();
         Long Longitude = attendance.getLongitude();
         return studentService.doLocation(id, classId, Latitude, Longitude);
@@ -646,6 +650,7 @@ public class UserBehaviorController {
 
     /**
      * 二维码签到
+     * 第三次签到需要的信息：学生id，班级id，二维码字符串，签到时间
      *
      * @param id         学生id
      * @param attendance 签到信息
@@ -653,9 +658,9 @@ public class UserBehaviorController {
      */
     @PutMapping("/student/checkin3")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean checkin3(@PathVariable String id, @RequestBody Attendance attendance, @RequestParam String QRCode) {
+    public boolean checkin3(@PathVariable String id, @RequestBody AttendanceDto attendance, @RequestParam String QRCode) {
         logger.info("Student checkin3 request received");
-        String classId = attendance.getAclass().getId();
+        String classId = attendance.getClassId();
         return studentService.doQR(id, classId, QRCode);
     }
 
