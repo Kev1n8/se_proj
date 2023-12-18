@@ -96,7 +96,7 @@ public class AttendanceMeta {
         this.longitude = longitude;
     }
 
-    public boolean isNotified() {
+    public boolean hasNotified() {
         return notified;
     }
 
