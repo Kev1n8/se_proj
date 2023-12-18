@@ -255,13 +255,14 @@ public class TeacherService extends UserService {
      * Update an announcement.
      * @param meta the announcement to be updated.
      */
-    public AttendanceMeta updateAttendanceMeta(AttendanceMeta meta) {
-        AttendanceMeta existingMeta = attendanceMetaRepository.findById(meta.getId()).orElse(null);
-        if (existingMeta == null) {
+    public AttendanceMeta updateAttendanceMeta(String metaId, MetaDto meta) {
+        AttendanceMeta existingMeta = attendanceMetaRepository.findById(metaId).orElse(null);
+        Aclass newClass = aclassRepository.findById(meta.getClassId()).orElse(null);
+        if (existingMeta == null || newClass == null) {
             return null;
         }
+        existingMeta.setAclass(newClass);
         existingMeta.setRequirement(meta.getRequirement());
-        existingMeta.setAclass(meta.getAclass());
         existingMeta.setStart(meta.getStart());
         existingMeta.setDeadline(meta.getDeadline());
         return attendanceMetaRepository.save(existingMeta);
