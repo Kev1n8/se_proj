@@ -25,7 +25,6 @@ public class Teacher implements UserDetails {
 
     private String department;
 
-    private boolean isExpired;
 
     protected Teacher() {}
 
@@ -74,9 +73,6 @@ public class Teacher implements UserDetails {
         this.password = codedPassword;
     }
 
-    public void setExpired(boolean isExpired) {
-        this.isExpired = isExpired;
-    }
 
     @Override
     public String toString() {
