@@ -1,5 +1,6 @@
 package com.codeisright.attendance.data;
 
+import com.codeisright.attendance.cache.AclassDto;
 import com.codeisright.attendance.view.TeacherInfo;
 import jakarta.persistence.*;
 
@@ -33,12 +34,12 @@ public class Aclass {
         this.teacher = teacher;
     }
 
-    public Aclass(Aclass aclass) {
-        this.title = aclass.title;
-        this.description = aclass.description;
-        this.grade = aclass.grade;
-        this.course = aclass.course;
-        this.teacher = aclass.teacher;
+    public Aclass(AclassDto aclass, Course course, Teacher teacher) {
+        this.title = aclass.getTitle();
+        this.description = aclass.getDescription();
+        this.grade = aclass.getGrade();
+        this.course = course;
+        this.teacher = teacher;
     }
 
     public String getId() {
