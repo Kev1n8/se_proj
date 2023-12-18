@@ -1,5 +1,6 @@
 package com.codeisright.attendance.service;
 
+import com.codeisright.attendance.cache.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.*;
@@ -146,13 +147,20 @@ public class TeacherService extends UserService {
      * @param classId the classId of the class.
      * @param meta the meta of the attendance.
      */
-    public AttendanceMeta announce(String classId, AttendanceMeta meta) {
+    public AttendanceMeta announce(String classId, MetaDto meta) {
         Aclass aclass = aclassRepository.findById(classId).orElse(null);
         if (aclass == null) {
             return null;
         }
-        meta.setId(RandomIdGenerator.generate());
-        return attendanceMetaRepository.save(meta);
+
+        String newId = RandomIdGenerator.generate();
+        while(attendanceMetaRepository.findById(newId).isPresent()){ // make sure the id is unique
+            newId = RandomIdGenerator.generate();
+        }
+        AttendanceMeta newMeta = new AttendanceMeta(newId, meta, aclass);
+
+        logger.info("Attendance announced: " + newMeta);
+        return attendanceMetaRepository.save(newMeta);
     }
 
     /**
