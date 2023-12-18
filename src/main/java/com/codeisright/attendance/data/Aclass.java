@@ -8,8 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 public class Aclass {
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", type = org.hibernate.id.uuid.UuidGenerator.class)
+    @GenericGenerator(name = "UUID", type = org.hibernate.id.uuid.UuidGenerator.class)
     private String id;
 
     private String title;
