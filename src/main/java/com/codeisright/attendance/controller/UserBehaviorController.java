@@ -1,5 +1,6 @@
 package com.codeisright.attendance.controller;
 
+import com.codeisright.attendance.cache.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
@@ -319,7 +320,7 @@ public class UserBehaviorController {
     @PostMapping("/teacher/classes/{classId}/meta")
     @PreAuthorize("#id == authentication.principal.username")
     public AttendanceMeta announce(@PathVariable String id, @PathVariable String classId,
-                                   @RequestBody AttendanceMeta meta) {
+                                   @RequestBody MetaDto meta) {
         logger.info("Announce request received");
         return teacherService.announce(classId, meta);
     }
