@@ -1,5 +1,6 @@
 package com.codeisright.attendance.service;
 
+import com.codeisright.attendance.cache.AclassDto;
 import com.codeisright.attendance.cache.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
@@ -184,12 +185,13 @@ public class TeacherService extends UserService {
      * @param teacherId the ID of the teacher.
      * @param aclass the class to be added.
      */
-    public Aclass addClass(String teacherId, Aclass aclass) {
+    public Aclass addClass(String teacherId, AclassDto aclass) {
         Teacher teacher = teacherRepository.findById(teacherId).orElse(null);
-        if (teacher == null) {
+        Course course = courseRepository.findById(aclass.getCourseId()).orElse(null);
+        if (teacher == null || course == null) {
             return null;
         }
-        Aclass newClass = new Aclass(aclass);
+        Aclass newClass = new Aclass(aclass, course, teacher);
         return aclassRepository.save(newClass);
     }
 
@@ -310,6 +312,8 @@ public class TeacherService extends UserService {
     public AttendanceMeta getNotification(String classId) {
         AttendanceMeta toNotify = attendanceMetaRepository.findFirstByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(classId, LocalDateTime.now());
         if (toNotify==null)
+            return null;
+        if (toNotify.hasNotified())
             return null;
         toNotify.setNotified(true);
         attendanceMetaRepository.save(toNotify);
