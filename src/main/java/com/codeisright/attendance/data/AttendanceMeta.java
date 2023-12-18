@@ -1,6 +1,7 @@
 package com.codeisright.attendance.data;
 
 import com.codeisright.attendance.cache.MetaDto;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -12,8 +13,10 @@ public class AttendanceMeta {
 
     private int requirement; // 1, 2, 3 mapping by code, by location and by QR
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime start;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime deadline;
 
     private Long latitude;
