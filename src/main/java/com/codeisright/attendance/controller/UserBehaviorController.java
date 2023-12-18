@@ -7,7 +7,6 @@ import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
 import com.codeisright.attendance.view.StudentInfo;
 import com.codeisright.attendance.view.TeacherInfo;
-import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +14,7 @@ import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/usr/{id}")
@@ -389,15 +391,15 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<JsonObject> addClassStudent(@PathVariable String id, @RequestBody AclassDto clazz) {
+    public ResponseEntity<Map<String, String>> addClassStudent(@PathVariable String id, @RequestBody AclassDto clazz) {
         logger.info("Add class request received");
         Aclass result = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
         if (teacherService.getClassById(result.getId()) != null){
-            JsonObject jsonObject = new JsonObject();
-            jsonObject.addProperty("classId", result.getId());
-            return ResponseEntity.ok(jsonObject);
+            Map<String, String> map = new HashMap<>();
+            map.put("classId", result.getId());
+            return ResponseEntity.ok(map);
         } else {
-            return ResponseEntity.noContent().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
