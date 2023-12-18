@@ -335,9 +335,9 @@ public class UserBehaviorController {
      */
     @PutMapping("/teacher/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public AttendanceMeta updateAttendanceMeta(@PathVariable String id, @RequestBody AttendanceMeta meta) {
+    public AttendanceMeta updateAttendanceMeta(@PathVariable String id, @RequestBody MetaDto meta, @PathVariable String metaId) {
         logger.info("Update meta request received");
-        return teacherService.updateAttendanceMeta(meta);
+        return teacherService.updateAttendanceMeta(metaId, meta);
     }
 
     /**
