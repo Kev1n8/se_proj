@@ -191,7 +191,8 @@ public class TeacherService extends UserService {
         if (teacher == null || course == null) {
             return null;
         }
-        Aclass newClass = new Aclass(aclass, course, teacher);
+        Aclass newClass = new Aclass();
+        newClass.setClass(aclass, course, teacher);
         return aclassRepository.save(newClass);
     }
 
