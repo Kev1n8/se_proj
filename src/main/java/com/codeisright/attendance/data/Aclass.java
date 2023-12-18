@@ -3,11 +3,13 @@ package com.codeisright.attendance.data;
 import com.codeisright.attendance.cache.AclassDto;
 import com.codeisright.attendance.view.TeacherInfo;
 import jakarta.persistence.*;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 public class Aclass {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", type = org.hibernate.id.uuid.UuidGenerator.class)
     private String id;
 
     private String title;
@@ -24,17 +26,11 @@ public class Aclass {
     @JoinColumn(name="teacherId")
     private Teacher teacher;
 
-    protected Aclass() {}
+    public Aclass() {}
 
-    public Aclass(String title, String description, int grade, Course course, Teacher teacher) {
-        this.title = title;
-        this.description = description;
-        this.grade = grade;
-        this.course = course;
-        this.teacher = teacher;
-    }
-
-    public Aclass(AclassDto aclass, Course course, Teacher teacher) {
+    public void setClass(AclassDto aclass, Course course, Teacher teacher) {
+        // auto-generated id
+        this.id = null;
         this.title = aclass.getTitle();
         this.description = aclass.getDescription();
         this.grade = aclass.getGrade();
