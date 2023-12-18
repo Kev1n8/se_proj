@@ -1,11 +1,13 @@
 package com.codeisright.attendance.controller;
 
+import com.codeisright.attendance.cache.AclassDto;
 import com.codeisright.attendance.cache.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
 import com.codeisright.attendance.view.StudentInfo;
 import com.codeisright.attendance.view.TeacherInfo;
+import com.google.gson.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -254,19 +256,6 @@ public class UserBehaviorController {
     }
 
     /**
-     * 教师创建班级
-     *
-     * @param id     教师id
-     * @param aclass 班级信息
-     */
-    @PostMapping("/teacher/classes/{classId}")
-    @PreAuthorize("#id == authentication.principal.username")
-    public Aclass addClass(@PathVariable String id, @RequestBody Aclass aclass) {
-        logger.info("Add class request received");
-        return teacherService.addClass(id, aclass);
-    }
-
-    /**
      * 教师注册
      *
      * @param id      教师id
@@ -400,10 +389,16 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean addClassStudent(@PathVariable String id, @RequestBody Aclass clazz) {
+    public ResponseEntity<JsonObject> addClassStudent(@PathVariable String id, @RequestBody AclassDto clazz) {
         logger.info("Add class request received");
-        clazz = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
-        return teacherService.getClassById(clazz.getId()) != null;
+        Aclass result = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
+        if (teacherService.getClassById(result.getId()) != null){
+            JsonObject jsonObject = new JsonObject();
+            jsonObject.addProperty("classId", result.getId());
+            return ResponseEntity.ok(jsonObject);
+        } else {
+            return ResponseEntity.noContent().build();
+        }
     }
 
     /**
