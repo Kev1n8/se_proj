@@ -1,5 +1,6 @@
 package com.codeisright.attendance.data;
 
+import com.codeisright.attendance.cache.MetaDto;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -26,6 +27,17 @@ public class AttendanceMeta {
     private Aclass aclass;
 
     protected AttendanceMeta() {
+    }
+
+    public AttendanceMeta(String id, MetaDto meta, Aclass aclass) {
+        this.id = id;
+        this.requirement = meta.getRequirement();
+        this.start = meta.getStart();
+        this.deadline = meta.getDeadline();
+        this.latitude = meta.getLatitude();
+        this.longitude = meta.getLongitude();
+        this.aclass = aclass;
+        this.notified = false;
     }
 
     public String getId() {
