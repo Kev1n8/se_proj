@@ -172,10 +172,10 @@ public class TeacherService extends UserService {
         LocalDateTime now = LocalDateTime.now();
         AttendanceMeta meta = attendanceMetaRepository.findById(metaId).orElse(null);
         if (meta == null) {
-            return null;
+            return "No such attendanceMeta.";
         }
         if (now.isBefore(meta.getStart()) || now.isAfter(meta.getDeadline())) {
-            return null;
+            return "Attendance not available now.";
         }
         return QRCodeUtils.generateQRCode(metaId, 30L);  // 30 seconds alive
     }
