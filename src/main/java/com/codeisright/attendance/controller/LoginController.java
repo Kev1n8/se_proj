@@ -1,6 +1,6 @@
 package com.codeisright.attendance.controller;
 
-import com.codeisright.attendance.cache.UserDto;
+import com.codeisright.attendance.dto.UserDto;
 import com.codeisright.attendance.data.Student;
 import com.codeisright.attendance.data.Teacher;
 import com.codeisright.attendance.service.StudentService;

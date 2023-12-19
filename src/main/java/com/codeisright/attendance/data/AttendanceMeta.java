@@ -1,6 +1,6 @@
 package com.codeisright.attendance.data;
 
-import com.codeisright.attendance.cache.MetaDto;
+import com.codeisright.attendance.dto.MetaDto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 

@@ -1,4 +1,4 @@
-package com.codeisright.attendance.cache;
+package com.codeisright.attendance.dto;
 
 import com.codeisright.attendance.data.AttendanceMeta;
 import org.springframework.data.domain.Page;

@@ -1,7 +1,7 @@
 package com.codeisright.attendance.service;
 
-import com.codeisright.attendance.cache.AclassDto;
-import com.codeisright.attendance.cache.MetaDto;
+import com.codeisright.attendance.dto.AclassDto;
+import com.codeisright.attendance.dto.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.exception.EntityNotFoundException;
 import com.codeisright.attendance.repository.*;
