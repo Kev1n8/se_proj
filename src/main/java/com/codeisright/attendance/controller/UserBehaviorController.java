@@ -1,3 +1,9 @@
+/**
+ * Project Name: Online Attendance Management System
+ * File Name: UserBehaviorController.java
+ * Author: Kaifeng Zheng
+ */
+
 package com.codeisright.attendance.controller;
 
 import com.codeisright.attendance.dto.AclassDto;
