@@ -16,6 +16,14 @@ public class AclassDto {
 
     private final String teacherId;
 
+    public AclassDto(String title, String description, int grade, String courseId, String teacherId) {
+        this.title = title;
+        this.description = description;
+        this.grade = grade;
+        this.courseId = courseId;
+        this.teacherId = teacherId;
+    }
+
     public AclassDto(Aclass aclass) {
         if (aclass == null) {
             this.title = "";
@@ -58,15 +66,5 @@ public class AclassDto {
 
     public String getTeacherId() {
         return teacherId;
-    }
-
-    public Map<String, String> toMap(){
-        return Map.of(
-            "title", title,
-            "description", description,
-            "grade", String.valueOf(grade),
-            "courseId", courseId,
-            "teacherId", teacherId
-        );
     }
 }

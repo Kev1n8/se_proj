@@ -41,6 +41,17 @@ public class AttendanceDto {
         }
     }
 
+    public AttendanceDto(String studentId, String classId, String metaId, int status, LocalDateTime time,
+                         Long latitude, Long longitude) {
+        this.studentId = studentId;
+        this.classId = classId;
+        this.metaId = metaId;
+        this.status = status;
+        this.time = time;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
     public String getStudentId() {
         return studentId;
     }

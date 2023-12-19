@@ -24,6 +24,17 @@ public class MetaDto {
 
     private final String classId;
 
+    public MetaDto(String id, int requirement, LocalDateTime start, LocalDateTime deadline, Long latitude,
+                   Long longitude, String classId) {
+        this.id = id;
+        this.requirement = requirement;
+        this.start = start;
+        this.deadline = deadline;
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.classId = classId;
+    }
+
     public MetaDto(AttendanceMeta meta) {
         if (meta == null) {
             this.id = "";
@@ -90,5 +101,13 @@ public class MetaDto {
                 "longitude", String.valueOf(longitude),
                 "classId", classId
         );
+    }
+
+    public static List<MetaDto> Convert(List<AttendanceMeta> ls){
+        List<MetaDto> dtos = new ArrayList<>();
+        for (AttendanceMeta meta : ls) {
+            dtos.add(new MetaDto(meta));
+        }
+        return dtos;
     }
 }
