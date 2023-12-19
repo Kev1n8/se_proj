@@ -136,9 +136,9 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public Aclass getTeacherClass(@PathVariable String id, @PathVariable String classId) {
+    public AclassDto getTeacherClass(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get teacher class request received");
-        return teacherService.getClass(classId);
+        return new AclassDto(teacherService.getClass(classId));
     }
 
     /**
@@ -189,10 +189,10 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes/{classId}/meta")
     @PreAuthorize("#id == authentication.principal.username")
-    public Page<AttendanceMeta> getMetaList(@PathVariable String id, @PathVariable String classId,
+    public Page<MetaDto> getMetaList(@PathVariable String id, @PathVariable String classId,
                                             @RequestParam(defaultValue = "0") int page) {
         logger.info("Get meta list request received");
-        return teacherService.getMetasByClassIdPage(classId, page);
+        return MetaDto.Convert(teacherService.getMetasByClassIdPage(classId, page));
     }
 
     /**
@@ -203,9 +203,9 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public AttendanceMeta getAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
+    public MetaDto getAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
         logger.info("Get meta request received");
-        return teacherService.getMetaByMetaId(metaId);
+        return new MetaDto(teacherService.getMetaByMetaId(metaId));
     }
 
     /**
@@ -213,6 +213,7 @@ public class UserBehaviorController {
      *
      * @param id     教师id
      * @param metaId 签到记录id
+     * @return "qr" if success, "not found" if not found, "not available" if not available
      */
     @GetMapping("/teacher/meta/{metaId}/qr")
     @PreAuthorize("#id == authentication.principal.username")
@@ -230,10 +231,16 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes/{classId}/meta/{metaId}/list")  // 列出谁没签到，谁签到了
     @PreAuthorize("#id == authentication.principal.username")
-    public List<List<StudentInfo>> getAttendanceCircumstance(@PathVariable String id, @PathVariable String classId,
+    public ResponseEntity<Map<String, String>> getAttendanceCircumstance(@PathVariable String id, @PathVariable String classId,
                                                              @PathVariable String metaId) {
         logger.info("Get attendance circumstance request received");
-        return teacherService.getAttendanceCircumstance(classId, metaId);
+        List<List<StudentInfo>> circumstance = teacherService.getAttendanceCircumstance(classId, metaId);
+
+        Map<String, String> toReturn = new HashMap<>();
+        toReturn.put("absent", circumstance.get(0).toString());
+        toReturn.put("present", circumstance.get(1).toString());
+
+        return ResponseEntity.ok(toReturn);
     }
 
     /**
@@ -267,9 +274,9 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/register")
     @PreAuthorize("#id == authentication.principal.username")
-    public Teacher addTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
+    public TeacherInfo addTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
         logger.info("Add teacher request received");
-        return teacherService.addTeacher(teacher);
+        return teacherService.addTeacher(teacher).toTeacherInfo();
     }
 
     /**
@@ -279,9 +286,9 @@ public class UserBehaviorController {
      */
     @PutMapping("/teacher")
     @PreAuthorize("#id == authentication.principal.username")
-    public Teacher updateTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
+    public TeacherInfo updateTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
         logger.info("Update teacher request received");
-        return teacherService.updateTeacher(teacher);
+        return teacherService.updateTeacher(teacher).toTeacherInfo();
     }
 
     /**
@@ -312,10 +319,10 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes/{classId}/meta")
     @PreAuthorize("#id == authentication.principal.username")
-    public AttendanceMeta announce(@PathVariable String id, @PathVariable String classId,
+    public MetaDto announce(@PathVariable String id, @PathVariable String classId,
                                    @RequestBody MetaDto meta) {
         logger.info("Announce request received");
-        return teacherService.announce(classId, meta);
+        return new MetaDto(teacherService.announce(classId, meta));
     }
 
     /**
@@ -326,9 +333,9 @@ public class UserBehaviorController {
      */
     @PutMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public Aclass updateClass(@PathVariable String id, @RequestBody Aclass aclass) {
+    public AclassDto updateClass(@PathVariable String id, @RequestBody Aclass aclass) {
         logger.info("Update class request received");
-        return teacherService.updateClass(aclass);
+        return new AclassDto(teacherService.updateClass(aclass));
     }
 
     /**
@@ -339,9 +346,9 @@ public class UserBehaviorController {
      */
     @PutMapping("/teacher/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public AttendanceMeta updateAttendanceMeta(@PathVariable String id, @RequestBody MetaDto meta, @PathVariable String metaId) {
+    public MetaDto updateAttendanceMeta(@PathVariable String id, @RequestBody MetaDto meta, @PathVariable String metaId) {
         logger.info("Update meta request received");
-        return teacherService.updateAttendanceMeta(metaId, meta);
+        return new MetaDto(teacherService.updateAttendanceMeta(metaId, meta));
     }
 
     /**
@@ -351,10 +358,19 @@ public class UserBehaviorController {
      */
     @DeleteMapping("/teacher")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean deleteTeacher(@PathVariable String id) {
+    public ResponseEntity<Map<String,String>> deleteTeacher(@PathVariable String id) {
         logger.info("Delete teacher request received");
         teacherService.deleteTeacher(id);
-        return teacherService.getTeacherById(id) == null;
+        if(teacherService.getTeacherById(id) == null){
+            Map<String,String> map = new HashMap<>();
+            map.put("status","success");
+            return ResponseEntity.ok(map);
+        }
+        else{
+            Map<String,String> map = new HashMap<>();
+            map.put("status","fail");
+            return ResponseEntity.ok(map);
+        }
     }
 
     /**
@@ -365,10 +381,19 @@ public class UserBehaviorController {
      */
     @DeleteMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean deleteClass(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, String>> deleteClass(@PathVariable String id, @PathVariable String classId) {
         logger.info("Delete class request received");
         teacherService.deleteClass(classId);
-        return teacherService.getClassById(classId) == null;
+        if(teacherService.getClassById(classId) == null){
+            Map<String,String> map = new HashMap<>();
+            map.put("status","success");
+            return ResponseEntity.ok(map);
+        }
+        else{
+            Map<String,String> map = new HashMap<>();
+            map.put("status","fail");
+            return ResponseEntity.ok(map);
+        }
     }
 
     /**
@@ -379,10 +404,19 @@ public class UserBehaviorController {
      */
     @DeleteMapping("/teacher/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean deleteAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
+    public ResponseEntity<Map<String, String>> deleteAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
         logger.info("Delete meta request received");
         teacherService.deleteAttendanceMeta(metaId);
-        return teacherService.getMetaByMetaId(metaId) == null;
+        if (teacherService.getMetaByMetaId(metaId) == null){
+            Map<String,String> map = new HashMap<>();
+            map.put("status","success");
+            return ResponseEntity.ok(map);
+        }
+        else{
+            Map<String,String> map = new HashMap<>();
+            map.put("status","fail");
+            return ResponseEntity.ok(map);
+        }
     }
 
     /**
@@ -397,9 +431,7 @@ public class UserBehaviorController {
         logger.info("Add class request received");
         Aclass result = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
         if (teacherService.getClassById(result.getId()) != null){
-            Map<String, String> map = new HashMap<>();
-            map.put("classId", result.getId());
-            return ResponseEntity.ok(map);
+            return ResponseEntity.ok(new AclassDto(result).toMap());
         } else {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
@@ -415,16 +447,22 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes/{classId}/postExcel")
     @PreAuthorize("#id == authentication.principal.username")
-    public List<Object> addClassStudentByExcel(@PathVariable String id, @PathVariable String classId, @RequestParam(
+    public ResponseEntity<Map<String, String>> addClassStudentByExcel(@PathVariable String id, @PathVariable String classId, @RequestParam(
             "file") MultipartFile file) {
         logger.info("Add class student by excel request received");
-        if (!teacherService.getClassByTeacherId(id).contains(teacherService.getClassById(classId))) {
-            return null;
+        if (!teacherService.getClassByTeacherId(id).contains(teacherService.getClassById(classId))) {  // 判断是否为该教师的班级
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         try {
-            return teacherService.addClassStudentByExcel(classId, file.getBytes());
+            List<Object> res = teacherService.addClassStudentByExcel(classId, file.getBytes());
+            Map<String, String> map = new HashMap<>();
+            map.put("valid", res.get(0).toString());
+            map.put("invalid", res.get(1).toString());
+            map.put("duplicate", res.get(2).toString());
+            return ResponseEntity.ok(map);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
@@ -437,23 +475,33 @@ public class UserBehaviorController {
      */
     @DeleteMapping("/teacher/classes/{classId}/student/{studentId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean deleteClassStudent(@PathVariable String id, @PathVariable String classId,
+    public ResponseEntity<Map<String, String>> deleteClassStudent(@PathVariable String id, @PathVariable String classId,
                                       @PathVariable String studentId) {
         logger.info("Delete class student request received");
         teacherService.deleteClassStudent(classId, studentId);
-        return !teacherService.isStudentInClass(classId, studentId);
+        if (!teacherService.isStudentInClass(classId, studentId)){
+            Map<String,String> map = new HashMap<>();
+            map.put("status","success");
+            return ResponseEntity.ok(map);
+        }
+        else{
+            Map<String,String> map = new HashMap<>();
+            map.put("status","fail");
+            return ResponseEntity.ok(map);
+        }
     }
 
     /**
-     * 教师获取消息
+     * 教师获取消息，只会返回 *当前班级* *最新* *已到期* 的签到
      *
      * @param id 教师id
+     * @return 如果没有新消息则空的MetaDto，否则返回最新的MetaDto
      */
     @GetMapping("/teacher/notification/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public AttendanceMeta getNotification(@PathVariable String id, @PathVariable String classId) {
+    public MetaDto getNotification(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get notification request received");
-        return teacherService.getNotification(classId);
+        return new MetaDto(teacherService.getNotification(classId));
     }
 
 
@@ -540,9 +588,9 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes")
     @PreAuthorize("#id == authentication.principal.username")
-    public List<Aclass> getStudentClasses(@PathVariable String id) {
+    public List<AclassDto> getStudentClasses(@PathVariable String id) {
         logger.info("Get student classes request received");
-        return studentService.getClassByStudentId(id);
+        return AclassDto.Convert(studentService.getClassByStudentId(id));
     }
 
     /**
@@ -571,9 +619,9 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public Aclass getStudentClass(@PathVariable String id, @PathVariable String classId) {
+    public AclassDto getStudentClass(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get student class request received");
-        return studentService.getClassById(classId);
+        return new AclassDto(studentService.getClassById(classId));
     }
 
     /**
@@ -597,10 +645,10 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}/meta")
     @PreAuthorize("#id == authentication.principal.username")
-    public Page<AttendanceMeta> getStudentAttendanceMeta(@PathVariable String id, @PathVariable String classId,
+    public Page<MetaDto> getStudentAttendanceMeta(@PathVariable String id, @PathVariable String classId,
                                                          @RequestParam(value = "page", defaultValue = "0") int page) {
         logger.info("Get student class attendance meta request received");
-        return studentService.getMetasByClassIdPage(classId, page);
+        return MetaDto.Convert(studentService.getMetasByClassIdPage(classId, page));
     }
 
     /**
@@ -611,9 +659,15 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public Attendance getStudentClassMetaRecord(@PathVariable String id, @PathVariable String metaId) {
+    public ResponseEntity<Map<String, String>> getStudentClassMetaRecord(@PathVariable String id, @PathVariable String metaId) {
         logger.info("Get student class meta record request received");
-        return studentService.getAttendanceByStudentAndMeta(id, metaId);
+        Attendance record = studentService.getAttendanceByStudentAndMeta(id, metaId);
+        if (record == null) {
+            return ResponseEntity.notFound().build();
+        } else {
+            AttendanceDto attendanceDto = new AttendanceDto(record);
+            return ResponseEntity.ok(attendanceDto.toMap());
+        }
     }
 
     /**
@@ -625,10 +679,19 @@ public class UserBehaviorController {
      */
     @PostMapping("/student/checkin1")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean checkin1(@PathVariable String id, @RequestBody AttendanceDto attendance) {
+    public ResponseEntity<Map<String, String>> checkin1(@PathVariable String id, @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin1 request received");
         String classId = attendance.getClassId();
-        return studentService.doCheckin(id, classId, 1);
+        boolean res = studentService.doCheckin(id, classId, 1);
+        if (res) {
+            Attendance r = studentService.getAttendanceByStudentAndMeta(id, attendance.getMetaId());
+            AttendanceDto record = new AttendanceDto(r);
+            return ResponseEntity.ok(record.toMap());
+        } else {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "fail");
+            return ResponseEntity.ok(map);
+        }
     }
 
     /**
@@ -640,12 +703,20 @@ public class UserBehaviorController {
      */
     @PutMapping("/student/checkin2")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean checkin2(@PathVariable String id, @RequestBody AttendanceDto attendance) {
+    public ResponseEntity<Map<String, String>> checkin2(@PathVariable String id, @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin2 request received");
         String classId = attendance.getClassId();
         Long Latitude = attendance.getLatitude();
         Long Longitude = attendance.getLongitude();
-        return studentService.doLocation(id, classId, Latitude, Longitude);
+        boolean res = studentService.doLocation(id, classId, Latitude, Longitude);
+        if (res) {
+            Attendance attendance1 = studentService.getAttendanceByStudentAndMeta(id, attendance.getMetaId());
+            return ResponseEntity.ok(new AttendanceDto(attendance1).toMap());
+        } else {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "fail");
+            return ResponseEntity.ok(map);
+        }
     }
 
     /**
@@ -658,10 +729,18 @@ public class UserBehaviorController {
      */
     @PutMapping("/student/checkin3")
     @PreAuthorize("#id == authentication.principal.username")
-    public boolean checkin3(@PathVariable String id, @RequestBody AttendanceDto attendance, @RequestParam String QRCode) {
+    public ResponseEntity<Map<String, String>> checkin3(@PathVariable String id, @RequestBody AttendanceDto attendance, @RequestParam String QRCode) {
         logger.info("Student checkin3 request received");
         String classId = attendance.getClassId();
-        return studentService.doQR(id, classId, QRCode);
+        boolean res = studentService.doQR(id, classId, QRCode);
+        if (res) {
+            Attendance attendance1 = studentService.getAttendanceByStudentAndMeta(id, attendance.getMetaId());
+            return ResponseEntity.ok(new AttendanceDto(attendance1).toMap());
+        } else {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "fail");
+            return ResponseEntity.ok(map);
+        }
     }
 
 }

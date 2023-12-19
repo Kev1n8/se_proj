@@ -7,7 +7,7 @@ a proj of software engineering
 
 ### 方式1 直接运行
 1. 安装jdk17
-2. 安装依赖
+2. 安装依赖，编译
 ```
 ./gradlew build
 ```
