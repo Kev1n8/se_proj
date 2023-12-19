@@ -6,9 +6,7 @@
 
 package com.codeisright.attendance.controller;
 
-import com.codeisright.attendance.dto.AclassDto;
-import com.codeisright.attendance.dto.AttendanceDto;
-import com.codeisright.attendance.dto.MetaDto;
+import com.codeisright.attendance.dto.*;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
@@ -205,12 +203,12 @@ public class UserBehaviorController {
     }
 
     /**
-     * 教师获取班级某个学生的信息
+     * 教师获取某个学生的信息
      *
      * @param id        教师id
      * @param studentId 学生id
      */
-    @GetMapping("/teacher/classes/{classId}/students/{studentId}")
+    @GetMapping("/teacher/students/{studentId}")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Map<String, Object>> getStudent(@PathVariable String id, @PathVariable String studentId) {
         logger.info("Get student request received");
@@ -349,19 +347,19 @@ public class UserBehaviorController {
     }
 
     /**
-     * 更新教师信息
+     * 更新教师信息，以url中的id为准，id不可以修改
      *
-     * @param teacherInfo 教师信息
+     * @param teacherDto 教师信息
      */
     @PutMapping("/teacher")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Map<String, Object>> updateTeacher(@PathVariable String id,
-                                                             @RequestBody TeacherInfo teacherInfo) {
+                                                             @RequestBody TeacherDto teacherDto) {
         logger.info("Update teacher request received");
         if (teacherService.getTeacherById(id) == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的老师"));
         }
-        TeacherInfo result = teacherService.updateTeacher(teacherInfo).toTeacherInfo();
+        TeacherInfo result = teacherService.updateTeacher(id, teacherDto).toTeacherInfo();
         return ResponseEntity.ok(getMap("teacher", result));
     }
 
@@ -369,19 +367,20 @@ public class UserBehaviorController {
      * 教师更改密码
      *
      * @param id          教师id
-     * @param newPassword 新密码
+     * @param userDto 新密码存在里面
      * @return Teacher 对象
      */
-    @PutMapping("/teacher/newpassword")
+    @PutMapping("/teacher/password")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, Object>> updatePassword(@PathVariable String id,
-                                                              @RequestBody String newPassword) {
+    public ResponseEntity<Map<String, Object>> updateTeacherPassword(@PathVariable String id,
+                                                              @RequestBody UserDto userDto) {
         logger.info("Update password request received");
+        String newPassword = userDto.getPassword();
         Teacher result = teacherService.updatePassword(id, newPassword);
         if (result == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的老师"));
         }
-        return ResponseEntity.ok(getMap("teacher", result));
+        return ResponseEntity.ok(getMap("teacher", result.toTeacherInfo()));
     }
 
     /**
@@ -440,7 +439,7 @@ public class UserBehaviorController {
     }
 
     /**
-     * 更新签到，以url中的metaId为主，不会考虑meta中的id
+     * 更新签到，以url中的metaId为主，不会考虑meta中的id，避免id被篡改
      *
      * @param id   教师id
      * @param meta 签到记录
@@ -506,7 +505,7 @@ public class UserBehaviorController {
      * @param id     教师id
      * @param metaId 签到记录id
      */
-    @DeleteMapping("/teacher/classes/{classId}/meta/{metaId}")
+    @DeleteMapping("/teacher/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Map<String, String>> deleteAttendanceMeta(@PathVariable String id,
                                                                     @PathVariable String metaId) {
@@ -798,12 +797,12 @@ public class UserBehaviorController {
     }
 
     /**
-     * 获取某个学生在某个班级的某次签到的记录
+     * 获取学生在某次签到的记录
      *
      * @param id     学生id
      * @param metaId 签到id
      */
-    @GetMapping("/student/classes/{classId}/meta/{metaId}")
+    @GetMapping("/student/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Map<String, Object>> getStudentClassMetaRecord(@PathVariable String id,
                                                                          @PathVariable String metaId) {
@@ -816,6 +815,41 @@ public class UserBehaviorController {
     }
 
     /**
+     * 学生更新资料
+     *
+     * @param id      学生id
+     * @param studentDto 学生信息
+     * @return 学生信息 或 失败
+     */
+    @PutMapping("/student/update")
+    @PreAuthorize("#id == authentication.principal.username")
+    public ResponseEntity<Map<String, Object>> updateStudent(@PathVariable String id, @RequestBody StudentDto studentDto){
+        logger.info("Update student request received");
+        Student res = studentService.updateStudent(id, studentDto);
+        if (res==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "找不到该学生"));
+        }
+        return ResponseEntity.ok(getMap("student", res.toStudentInfo()));
+    }
+
+    /**
+     * 学生修改密码
+     *
+     * @param id 学号
+     * @param userDto 密码载体
+     */
+    @PutMapping("/student/password")
+    @PreAuthorize("#id == authentication.principal.username")
+    public ResponseEntity<Map<String, Object>> updateStudentPassword(@PathVariable String id, @RequestBody UserDto userDto){
+        logger.info("Update student password request received");
+        Student res = studentService.updatePassword(id, userDto.getPassword());
+        if (res==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "找不到该学生"));
+        }
+        return ResponseEntity.ok(getMap("student", res.toStudentInfo()));
+    }
+
+    /**
      * 签到码签到，插入Status为1的记录到Attendance表中
      * 第一次签到需要的信息：学生id，班级id，签到码，签到时间
      *
@@ -824,20 +858,20 @@ public class UserBehaviorController {
      */
     @PostMapping("/student/checkin1")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> checkin1(@PathVariable String id,
+    public ResponseEntity<Map<String, Object>> checkin1(@PathVariable String id,
                                                         @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin1 request received");
-        String classId = attendance.getClassId();
-        boolean res = studentService.doCheckin(id, classId, 1);
-        if (res) {
-            Attendance r = studentService.getAttendanceByStudentAndMeta(id, attendance.getMetaId());
-            AttendanceDto record = new AttendanceDto(r);
-            return ResponseEntity.ok(record.toMap());
-        } else {
-            Map<String, String> map = new HashMap<>();
-            map.put("status", "fail");
-            return ResponseEntity.ok(map);
-        }
+        String metaId = attendance.getMetaId();
+        int res = studentService.doCheckin(id, metaId);
+        return switch (res) {
+            case 0 -> ResponseEntity.ok(getMap("status", "success"));
+            case 1 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "学生不在这个班级"));
+            case 2 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "签到没开始或已结束"));
+            case 3 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "学生已经完成签到Step1"));
+            case 4 -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "没有匹配的签到码"));
+            case 5 -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "签到时发生未知错误"));
+            default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "系统发生未知错误"));
+        };
     }
 
     /**
@@ -846,24 +880,26 @@ public class UserBehaviorController {
      *
      * @param id         学生id
      * @param attendance 签到信息
+     * @return 签到结果
      */
     @PutMapping("/student/checkin2")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> checkin2(@PathVariable String id,
+    public ResponseEntity<Map<String, Object>> checkin2(@PathVariable String id,
                                                         @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin2 request received");
         String classId = attendance.getClassId();
         Long Latitude = attendance.getLatitude();
         Long Longitude = attendance.getLongitude();
-        boolean res = studentService.doLocation(id, classId, Latitude, Longitude);
-        if (res) {
-            Attendance attendance1 = studentService.getAttendanceByStudentAndMeta(id, attendance.getMetaId());
-            return ResponseEntity.ok(new AttendanceDto(attendance1).toMap());
-        } else {
-            Map<String, String> map = new HashMap<>();
-            map.put("status", "fail");
-            return ResponseEntity.ok(map);
-        }
+        int res = studentService.doLocation(id, classId, Latitude, Longitude);
+        return switch (res){
+            case 0 -> ResponseEntity.ok(getMap("status", "success"));
+            case 1 -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "没有对应签到码"));
+            case 2 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "学生还没有完成签到Step1或状态不为1"));
+            case 3 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "有效期已过"));
+            case 4 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "地理位置不符合要求"));
+            case 5 -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "签到时发生未知错误"));
+            default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "系统发生未知错误"));
+        };
     }
 
     /**
@@ -873,23 +909,25 @@ public class UserBehaviorController {
      * @param id         学生id
      * @param attendance 签到信息
      * @param QRCode     二维码
+     * @return 签到结果
      */
     @PutMapping("/student/checkin3")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> checkin3(@PathVariable String id,
+    public ResponseEntity<Map<String, Object>> checkin3(@PathVariable String id,
                                                         @RequestBody AttendanceDto attendance,
                                                         @RequestParam String QRCode) {
         logger.info("Student checkin3 request received");
         String classId = attendance.getClassId();
-        boolean res = studentService.doQR(id, classId, QRCode);
-        if (res) {
-            Attendance attendance1 = studentService.getAttendanceByStudentAndMeta(id, attendance.getMetaId());
-            return ResponseEntity.ok(new AttendanceDto(attendance1).toMap());
-        } else {
-            Map<String, String> map = new HashMap<>();
-            map.put("status", "fail");
-            return ResponseEntity.ok(map);
-        }
+        int res = studentService.doQR(id, classId, QRCode);
+        return switch (res){
+            case 0 -> ResponseEntity.ok(getMap("status", "success"));
+            case 1 -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "没有对应签到码"));
+            case 2 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "学生还没有完成签到Step2或状态不为2"));
+            case 3 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "有效期已过"));
+            case 4 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "二维码已过期"));
+            case 5 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "未知的二维码"));
+            case 6 -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "签到时发生未知错误"));
+            default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "系统发生未知错误"));
+        };
     }
-
 }
