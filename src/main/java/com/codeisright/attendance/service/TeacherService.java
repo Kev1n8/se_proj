@@ -3,7 +3,7 @@ package com.codeisright.attendance.service;
 import com.codeisright.attendance.dto.AclassDto;
 import com.codeisright.attendance.dto.MetaDto;
 import com.codeisright.attendance.data.*;
-import com.codeisright.attendance.exception.EntityNotFoundException;
+import com.codeisright.attendance.dto.TeacherDto;
 import com.codeisright.attendance.repository.*;
 import com.codeisright.attendance.utils.ExcelHandler;
 import com.codeisright.attendance.utils.QRCodeUtils;
@@ -54,12 +54,15 @@ public class TeacherService extends UserService {
     /**
      * Update a teacher.
      * @param teacher the teacher to be updated.
+     * @return the updated teacher or null if the teacher does not exist.
      */
-    public Teacher updateTeacher(TeacherInfo teacher) {
+    public Teacher updateTeacher(String id, TeacherDto teacher) {
         Teacher existingTeacher =
-                teacherRepository.findById(teacher.getId()).orElseThrow(() -> new EntityNotFoundException(
-                        "Teacher " +
-                                "not found with ID: " + teacher.getId()));
+                teacherRepository.findById(id).orElse(null);
+        if (existingTeacher == null) {
+            logger.info("Teacher not found with ID: " + id);
+            return null;
+        }
         existingTeacher.setName(teacher.getName());
         existingTeacher.setAge(teacher.getAge());
         existingTeacher.setGender(teacher.getGender());
