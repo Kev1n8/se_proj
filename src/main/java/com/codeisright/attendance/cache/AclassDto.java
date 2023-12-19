@@ -3,19 +3,28 @@ package com.codeisright.attendance.cache;
 import com.codeisright.attendance.data.Aclass;
 
 import java.util.List;
+import java.util.Map;
 
 public class AclassDto {
-    private String title;
+    private final String title;
 
-    private String description;
+    private final String description;
 
-    private int grade;
+    private final int grade;
 
-    private String courseId;
+    private final String courseId;
 
-    private String teacherId;
+    private final String teacherId;
 
     public AclassDto(Aclass aclass) {
+        if (aclass == null) {
+            this.title = "";
+            this.description = "";
+            this.grade = 0;
+            this.courseId = "";
+            this.teacherId = "";
+            return;
+        }
         this.title = aclass.getTitle();
         this.description = aclass.getDescription();
         this.grade = aclass.getGrade();
@@ -29,10 +38,6 @@ public class AclassDto {
             res.add(new AclassDto(item));
         }
         return res;
-    }
-
-    public static AclassDto toDto(Aclass item){
-        return new AclassDto(item);
     }
 
     public String getTitle() {
@@ -53,5 +58,15 @@ public class AclassDto {
 
     public String getTeacherId() {
         return teacherId;
+    }
+
+    public Map<String, String> toMap(){
+        return Map.of(
+            "title", title,
+            "description", description,
+            "grade", String.valueOf(grade),
+            "courseId", courseId,
+            "teacherId", teacherId
+        );
     }
 }
