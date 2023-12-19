@@ -1,6 +1,7 @@
 package com.codeisright.attendance.data;
 
-import com.codeisright.attendance.cache.AclassDto;
+import com.codeisright.attendance.dto.AclassDto;
+import com.codeisright.attendance.view.AclassInfo;
 import com.codeisright.attendance.view.TeacherInfo;
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
@@ -124,5 +125,39 @@ public class Aclass {
                 ", course=" + course +
                 ", teacher=" + teacher +
                 '}';
+    }
+
+    public AclassInfo toAclassInfo() {
+        return new AclassInfo() {
+            @Override
+            public String getId() {
+                return id;
+            }
+
+            @Override
+            public String getTitle() {
+                return title;
+            }
+
+            @Override
+            public String getDescription() {
+                return description;
+            }
+
+            @Override
+            public int getGrade() {
+                return grade;
+            }
+
+            @Override
+            public String getCourseId() {
+                return course.getId();
+            }
+
+            @Override
+            public String getTeacherId() {
+                return teacher.getUsername();
+            }
+        };
     }
 }
