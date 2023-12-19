@@ -39,6 +39,10 @@ public class Student implements UserDetails {
         this.major = major;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getDescription() {
         return description;
     }
