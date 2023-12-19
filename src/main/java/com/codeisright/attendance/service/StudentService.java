@@ -1,6 +1,7 @@
 package com.codeisright.attendance.service;
 
 import com.codeisright.attendance.data.*;
+import com.codeisright.attendance.dto.StudentDto;
 import com.codeisright.attendance.repository.*;
 import com.codeisright.attendance.utils.QRCodeUtils;
 import com.codeisright.attendance.view.StudentInfo;
@@ -26,14 +27,11 @@ public class StudentService extends UserService {
                 attendanceMetaRepository, courseRepository);
     }
 
-    public List<Student> getAllStudents() {
-        return studentRepository.findAll();
-    }
-
     /**
-     * Get a student account by id.
+     * Get a student info by id.
      *
-     * @param id
+     * @param id student id
+     * @return student info or null if not found
      */
     public StudentInfo getStudentInfoById(String id) {
         logger.info("Getting student with ID: " + id);
@@ -41,23 +39,28 @@ public class StudentService extends UserService {
     }
 
     /**
+     * Get a student by id.
      *
+     * @param id student id
+     * @return Student or null if not found
      */
     public Student getStudentById(String id) {
-        return studentRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("not found student with " +
-                "id:" + id));
+        return studentRepository.findById(id).orElse(null);
     }
 
     /**
      * Update a student account in the database.
      *
-     * @param student
+     * @param studentId student id
+     * @param student student dto
+     * @return Student or null if not found
      */
-    public Student updateStudent(Student student) {
-        Student existingStudent =
-                studentRepository.findById(student.getUsername()).orElseThrow(() -> new EntityNotFoundException(
-                        "Error " +
-                                "finding student with id: " + student.getUsername()));
+    public Student updateStudent(String studentId, StudentDto student) {
+        Student existingStudent = studentRepository.findById(studentId).orElse(null);
+        if (existingStudent == null) {
+            logger.info("Student not found with ID: " + studentId);
+            return null;
+        }
         existingStudent.setName(student.getName());
         existingStudent.setAge(student.getAge());
         existingStudent.setGender(student.getGender());
@@ -65,9 +68,27 @@ public class StudentService extends UserService {
     }
 
     /**
+     * Change password of a student account.
+     *
+     * @param studentId id of the student
+     * @param password new password
+     * @return Student
+     */
+    public Student updatePassword(String studentId, String password) {
+        Student existingStudent =
+                studentRepository.findById(studentId).orElse(null);
+        if (existingStudent == null) {
+            logger.info("Student not found with ID: " + studentId);
+            return null;
+        }
+        existingStudent.setPassword(password);
+        return studentRepository.save(existingStudent);
+    }
+
+    /**
      * Delete a student account from the database.
      *
-     * @param id
+     * @param id student id
      */
     public void deleteStudent(String id) {
         studentRepository.deleteById(id);
@@ -76,7 +97,8 @@ public class StudentService extends UserService {
     /**
      * Add a new student to the database.
      *
-     * @param student
+     * @param student student to add
+     * @return Student or null if already exists
      */
     public Student registerStudent(Student student) {
         Student toAdd = studentRepository.findById(student.getUsername()).orElse(null);
@@ -90,65 +112,82 @@ public class StudentService extends UserService {
     /**
      * Get the attendance record of a student in a single metaAtt(if checkin step1 successfully before).
      *
-     * @param studentId
-     * @param attendanceMetaId
+     * @param studentId student id
+     * @param attendanceMetaId attendance meta id
+     * @return Attendance or null if not found
      */
     public Attendance getAttendanceByStudentAndMeta(String studentId, String attendanceMetaId) {
         return attendanceRepository.findByStudent_IdAndMeta_Id(studentId, attendanceMetaId);
     }
 
-    public boolean inClass(String studentId, String classId) {
+    /**
+     * Get the attendance record of a student in a single class.
+     *
+     * @param studentId student id
+     * @param classId class id
+     * @return true if the student is in the class, false otherwise
+     */
+    private boolean inClass(String studentId, String classId) {
         return enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId) != null;
     }
 
     /**
      * Add a new checkin record to the attendance table.
+     * Only used when a student checkin step1 successfully.
      *
-     * @param studentId
-     * @param classId
-     * @param status
-     * @param time
+     * @param studentId student id
+     * @param classId class id
+     * @param time checkin time
+     * @return true if successfully added, false otherwise
      */
-    public void addCheckin(String studentId, String classId, int status, LocalDateTime time) {
-        Student student =
-                studentRepository.findById(studentId).orElseThrow(() -> new com.codeisright.attendance.exception.EntityNotFoundException(
-                        "Student not found with ID: " + studentId));
-        Aclass aClass =
-                aclassRepository.findById(classId).orElseThrow(() -> new com.codeisright.attendance.exception.EntityNotFoundException("Class not " +
-                        "found with ID: " + classId));
-        Attendance toAdd = new Attendance(student, aClass, status, time, null, null);
+    public boolean addCheckin(String studentId, String classId, String metaId, LocalDateTime time) {
+        Student student = studentRepository.findById(studentId).orElse(null);
+        Aclass aClass = aclassRepository.findById(classId).orElse(null);
+        AttendanceMeta meta = attendanceMetaRepository.findById(metaId).orElse(null);
+
+        if (student == null || aClass == null || meta == null) {
+            logger.error("Error adding checkin record: student or class or meta not found");
+            return false;
+        }
+
+        Attendance toAdd = new Attendance(student, aClass, meta, 1,  time, null, null);
         attendanceRepository.save(toAdd);
+        return true;
     }
 
     /**
-     * Forward the latest checkin record to the current time. If location value is -1, then keep the original value.
+     * Forward the latest checkin record to the current time.
+     * If the input location values are -1, it's step 3, means remaining the original location.
+     * Otherwise, it's step3 checkin. Ignore the input location values.
      *
-     * @param recordToForward
+     * @param recordToForward the latest checkin record
      * @param time            current time
-     * @param latitude
-     * @param longitude
+     * @param latitude       latitude of the current location
+     * @param longitude     longitude of the current location
      */
-    public void forwardCheckin(Attendance recordToForward, LocalDateTime time, Long latitude, Long longitude) {
+    public boolean forwardCheckin(Attendance recordToForward, LocalDateTime time, Long latitude, Long longitude) {
         if (recordToForward == null) {
             logger.error("Error forwarding checkin record:" + recordToForward);
-            return;
+            return false;
         }
         recordToForward.setTime(time);
         recordToForward.forward();
-        if (latitude != -1 && longitude != -1) {
+        if (latitude != -1 && longitude != -1) {  // step 2 checkin
             recordToForward.setLatitude(latitude);
             recordToForward.setLongitude(longitude);
         }
         attendanceRepository.save(recordToForward);
+        return true;
     }
 
     /**
      * Calculate the distance(meters) between two locations.
      *
-     * @param lat1
-     * @param lon1
-     * @param lat2
-     * @param lon2
+     * @param lat1 latitude of location1
+     * @param lon1 longitude of location1
+     * @param lat2 latitude of location2
+     * @param lon2 longitude of location2
+     * @return distance between two locations in kilometers
      */
     public double calculateDistance(Long lat1, Long lon1, Long lat2, Long lon2) {
         int R = 6371; // Radius of the earth in km
@@ -158,31 +197,32 @@ public class StudentService extends UserService {
                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
                 * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double distance = R * c; // convert to kilometers
-        return distance;
+        return R * c; // convert to kilometers
     }
 
     /**
      * Check if the location is acceptable, which means the distance between the two locations should be less than 100m.
      *
-     * @param latitude
-     * @param longitude
-     * @param latitude2
-     * @param longitude2
+     * @param latitude1  latitude of location1
+     * @param longitude1  longitude of location1
+     * @param latitude2  latitude of location2
+     * @param longitude2  longitude of location2
+     * @return true if the distance is less than 100m, false otherwise
      */
-    public boolean acceptableLocation(Long latitude, Long longitude, Long latitude2, Long longitude2) {
-        double distance = calculateDistance(latitude, longitude, latitude2, longitude2);
+    public boolean acceptableLocation(Long latitude1, Long longitude1, Long latitude2, Long longitude2) {
+        double distance = calculateDistance(latitude1, longitude1, latitude2, longitude2);
         return distance < 0.1;
     }
 
     /**
      * Check if the current time is in the time range of the latest attendance meta.
      *
-     * @param classId
-     * @param time
+     * @param metaId attendance meta id
+     * @param time current time
+     * @return true if the current time is in the time range of the latest attendance meta, false otherwise
      */
-    public boolean isInTime(String classId, LocalDateTime time) {
-        AttendanceMeta latest_record = attendanceMetaRepository.findFirstByAclass_IdOrderByDeadlineDesc(classId);
+    public boolean isInTime(String metaId, LocalDateTime time) {
+        AttendanceMeta latest_record = attendanceMetaRepository.findById(metaId).orElse(null);
         if (latest_record == null) {
             return false;
         }
@@ -193,88 +233,111 @@ public class StudentService extends UserService {
     /**
      * Checkin step1 for a student.
      *
-     * @param studentId
-     * @param classId
-     * @param status
+     * @param studentId student id
+     * @param metaId attendance meta id
+     * @return 0 if successfully checked in, 1 if the student is not enrolled in the class, 2 if hove not started or
+     * already ended, 3 if the student has already checked in, 4 for unknown meta
+     * 5 for unknown error
      */
-    public boolean doCheckin(String studentId, String classId, int status) {
+    public int doCheckin(String studentId, String metaId) {
+        AttendanceMeta meta = attendanceMetaRepository.findById(metaId).orElse(null);
+        if (meta == null) {
+            return 4;
+        }
+        String classId = meta.getAclass().getId();
         if(!inClass(studentId, classId)) {
-            throw new RuntimeException("Cannot checkin. Student is not enrolled in this class.");
+            return 1;
+        }
+        Attendance record = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
+        if (record != null) {
+            return 3;
         }
         LocalDateTime time = LocalDateTime.now();
-        if (!isInTime(classId, time)) {
-            throw new RuntimeException("Cannot checkin. Teacher has not started the class yet or has ended the " +
-                    "class.");
+        attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
+        if (!isInTime(metaId, time)) {
+            return 2;
         }
-        addCheckin(studentId, classId, status, time);
-        logger.info("Student: {} checked in for class: {}", studentId, classId);
-        return true;
+        if(addCheckin(studentId, classId, metaId, time)) {
+            logger.info("Student: {} checked in for class: {}, meta:{}", studentId, classId, metaId);
+            return 0;
+        }
+        return 5;
     }
 
     /**
      * Checkin step2 for a student.
      *
-     * @param studentId
-     * @param classId
-     * @param latitute
-     * @param longitute
+     * @param studentId student id
+     * @param metaId attendance meta id
+     * @param latitute latitude of the current location
+     * @param longitute longitude of the current location
+     * @return 0 if successfully checked in, 1 if meta not exists, 2 if student hasn't done step1 checkin(status not 1),
+     * 3 if not in time, 4 if not acceptable location
      */
-    public boolean doLocation(String studentId, String classId, Long latitute, Long longitute) {
+    public int doLocation(String studentId, String metaId, Long latitute, Long longitute) {
         LocalDateTime time = LocalDateTime.now();
-        AttendanceMeta latest_record = attendanceMetaRepository.findFirstByAclass_IdOrderByDeadlineDesc(classId);
-        String metaId = latest_record.getId();
+        AttendanceMeta latest_record = attendanceMetaRepository.findById(metaId).orElse(null);
+        if (latest_record == null) {
+            return 1;
+        }
         Attendance original = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
+        if(original == null) {
+            return 2;
+        }
+        if(original.getStatus() != 1) {
+            return 2;
+        }
         Long l1 = latest_record.getLatitude();
         Long l2 = latest_record.getLongitude();
 
-        if (!isInTime(classId, LocalDateTime.now())) {
-            throw new RuntimeException("Cannot forward. Teacher has not started the class yet or has ended the " +
-                    "class.");
-        }
-        if (original == null) {//没有先进行签到码签到
-            throw new RuntimeException("Cannot forward. Student has not checked in yet.");
-        }
-        if (original.getStatus() != 1) {//不应该进行这一步签到
-            throw new RuntimeException("Cannot forward. Student's status is not 1.");
+        if (!isInTime(metaId, LocalDateTime.now())) {
+            return 3;
         }
         if (!acceptableLocation(latitute, longitute, l1, l2)) {//不在签到范围内
-            throw new RuntimeException("Cannot forward. Location is not acceptable.");
+            return 4;
         }
-        forwardCheckin(original, time, latitute, longitute);
-        logger.info("Student: {} forwarded checkin for class: {}", studentId, classId);
-        return true;
+        if (forwardCheckin(original, time, latitute, longitute)){
+            logger.info("Student: {} forwarded checkin for metaId: {}", studentId, metaId);
+            return 0;
+        }
+        return 5;
     }
 
     /**
      * Checkin step3 for a student.
      *
-     * @param studentId
-     * @param classId
-     * @param QRCode
+     * @param studentId student id
+     * @param metaId meta id
+     * @param QRCode QRCode
+     * @return 0 if successfully checked in, 1 if meta not exists, 2 if student hasn't done step2 checkin(status not 2),
+     * 3 if timeout, 4 if qr has expired, 5 if unknown qr, 6 for unknown error
      */
-    public boolean doQR(String studentId, String classId, String QRCode) {
+    public int doQR(String studentId, String metaId, String QRCode) {
         LocalDateTime time = LocalDateTime.now();
-        AttendanceMeta latest_record = attendanceMetaRepository.findFirstByAclass_IdOrderByDeadlineDesc(classId);
-        String metaId = latest_record.getId();
+        AttendanceMeta latest_record = attendanceMetaRepository.findById(metaId).orElse(null);
+        if (latest_record == null) {
+            return 1;
+        }
         Attendance original = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
-        if (!isInTime(classId, LocalDateTime.now())) {
-            throw new RuntimeException("Cannot forward. Teacher has not started the class yet or has ended the " +
-                    "class.");
+        if (original == null) {
+            return 2;
         }
-        if (original == null) {//没有先进行签到码签到
-            throw new RuntimeException("Cannot forward. Student has not checked in yet.");
+        if (original.getStatus() != 2) {
+            return 2;
         }
-        if (original.getStatus() != 2) {//不应该进行这一步签到
-            throw new RuntimeException("Cannot forward. Student's status is not 2.");
+        if (!isInTime(metaId, LocalDateTime.now())) {
+            return 3;
         }
         if (!QRCodeUtils.qrInTime(QRCode)) {
-            throw new RuntimeException("Cannot forward. QRCode has expired.");
+            return 4;
         }
         if (!QRCodeUtils.isMetaIdEqual(QRCode, metaId)) {
-            throw new RuntimeException("Cannot forward. Unknown QRCode.");
+            return 5;
         }
-        forwardCheckin(original, time, -1L, -1L);
-        logger.info("Student: {} forwarded checkin for class: {}", studentId, classId);
-        return true;
+        if(forwardCheckin(original, time, -1L, -1L)){
+            logger.info("Student: {} forwarded checkin for meta: {}", studentId, metaId);
+            return 0;
+        }
+        return 6;
     }
 }
