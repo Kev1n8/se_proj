@@ -87,7 +87,7 @@ public class UserService {
      * Get a class by its id or null if not exists.
      * @param id class id
      */
-    public AclassInfo getClass(String id) {
+    public AclassInfo getClassInfo(String id) {
         logger.debug("Getting class with id " + id);
         return aclassRepository.findAclassInfoById(id);
     }
@@ -186,8 +186,7 @@ public class UserService {
      */
     public Aclass getClassById(String classId) {
         logger.debug("Getting class by classId " + classId);
-        return aclassRepository.findById(classId).orElseThrow(() -> new EntityNotFoundException("Error finding class " +
-                "with id: " + classId));
+        return aclassRepository.findById(classId).orElse(null);
     }
 
     /**
