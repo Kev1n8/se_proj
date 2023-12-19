@@ -1,4 +1,4 @@
-package com.codeisright.attendance.cache;
+package com.codeisright.attendance.dto;
 
 public class UserDto {
     private String id;

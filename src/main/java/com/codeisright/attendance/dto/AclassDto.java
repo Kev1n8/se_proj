@@ -1,4 +1,4 @@
-package com.codeisright.attendance.cache;
+package com.codeisright.attendance.dto;
 
 import com.codeisright.attendance.data.Aclass;
 

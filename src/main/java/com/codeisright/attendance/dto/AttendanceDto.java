@@ -1,4 +1,4 @@
-package com.codeisright.attendance.cache;
+package com.codeisright.attendance.dto;
 
 import com.codeisright.attendance.data.Attendance;
 
@@ -22,7 +22,7 @@ public class AttendanceDto {
 
     public AttendanceDto(Attendance attendance){
         if (attendance != null){
-            this.studentId = attendance.getStudent().getId();
+            this.studentId = attendance.getStudent().getUsername();
             this.classId = attendance.getAclass().getId();
             this.metaId = attendance.getMeta().getId();
             this.status = attendance.getStatus();
@@ -67,6 +67,19 @@ public class AttendanceDto {
 
     public Long getLongitude() {
         return longitude;
+    }
+
+    @Override
+    public String toString() {
+        return "AttendanceDto{" +
+                "studentId='" + studentId + '\'' +
+                ", classId='" + classId + '\'' +
+                ", metaId='" + metaId + '\'' +
+                ", status=" + status +
+                ", time=" + time +
+                ", latitude=" + latitude +
+                ", longitude=" + longitude +
+                '}';
     }
 
     public Map<String, String> toMap() {
