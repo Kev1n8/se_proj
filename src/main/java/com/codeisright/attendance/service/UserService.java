@@ -3,6 +3,7 @@ package com.codeisright.attendance.service;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.repository.*;
 import com.codeisright.attendance.utils.ImageUtils;
+import com.codeisright.attendance.view.AclassInfo;
 import com.codeisright.attendance.view.StudentInfo;
 import com.codeisright.attendance.view.TeacherInfo;
 import org.slf4j.Logger;
@@ -49,6 +50,10 @@ public class UserService {
         return aclassRepository.findByTeacherId(teacherId);
     }
 
+    public List<AclassInfo> getClassInfoByTeacherId(String teacherId) {
+        return aclassRepository.findAclassInfoByTeacherId(teacherId);
+    }
+
     /**
      * Get classes a student has been in.
      * @param studentId student id
@@ -64,12 +69,27 @@ public class UserService {
     }
 
     /**
+     * Get classes info a student has been in.
+     * @param studentId
+     * @return
+     */
+    public List<AclassInfo> getClassInfoByStudentId(String studentId) {
+        logger.debug("Getting classes by studentId " + studentId);
+        List<Enrollment> enrollments = enrollmentRepository.findAclassByStudent_Id(studentId);
+        List<AclassInfo> classes = new ArrayList<>();
+        for (Enrollment enrollment : enrollments) {
+            classes.add(aclassRepository.findAclassInfoById(enrollment.getAclass().getId()));
+        }
+        return classes;
+    }
+
+    /**
      * Get a class by its id or null if not exists.
      * @param id class id
      */
-    public Aclass getClass(String id) {
+    public AclassInfo getClass(String id) {
         logger.debug("Getting class with id " + id);
-        return aclassRepository.findById(id).orElse(null);
+        return aclassRepository.findAclassInfoById(id);
     }
 
     /**
