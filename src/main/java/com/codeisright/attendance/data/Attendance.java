@@ -32,7 +32,7 @@ public class Attendance {
 
     protected Attendance() {}
 
-    public Attendance(Student student, Aclass aClass, int status, LocalDateTime time, Long latitude, Long longitude) {
+    public Attendance(Student student, Aclass aClass, AttendanceMeta meta, int status, LocalDateTime time, Long latitude, Long longitude) {
         this.student = student;
         this.aclass = aClass;
         this.status = status;
@@ -40,6 +40,7 @@ public class Attendance {
         this.time = time;
         this.latitude = latitude;
         this.longitude = longitude;
+        this.meta = meta;
     }
 
     public Long getId() {
