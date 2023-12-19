@@ -7,4 +7,5 @@ public interface StudentInfo {
     String getGender();
     String getMajor();
     String getDescription();
+    String toString();
 }

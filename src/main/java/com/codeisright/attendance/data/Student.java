@@ -23,14 +23,6 @@ public class Student implements UserDetails {
     private String description;
     protected Student() {}
 
-    public String getId() {
-        return null;
-    }
-
-    public void setId(String stuId) {
-        this.id = stuId;
-    }
-
     public String getName() {
         return name;
     }
@@ -79,7 +71,7 @@ public class Student implements UserDetails {
                 ", age=" + age +
                 ", gender='" + gender + '\'' +
                 ", major='" + major + '\'' +
-                ", studentClass='" + description + '\'' +
+                ", description='" + description + '\'' +
                 '}';
     }
 
@@ -124,7 +116,7 @@ public class Student implements UserDetails {
         return new StudentInfo() {
             @Override
             public String getId() {
-                return Student.this.getId();
+                return Student.this.getUsername();
             }
 
             @Override
@@ -150,6 +142,11 @@ public class Student implements UserDetails {
             @Override
             public String getDescription() {
                 return Student.this.getDescription();
+            }
+
+            @Override
+            public String toString() {
+                return Student.this.toString();
             }
         };
     }
