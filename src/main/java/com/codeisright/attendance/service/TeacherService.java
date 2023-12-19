@@ -55,11 +55,11 @@ public class TeacherService extends UserService {
      * Update a teacher.
      * @param teacher the teacher to be updated.
      */
-    public Teacher updateTeacher(Teacher teacher) {
+    public Teacher updateTeacher(TeacherInfo teacher) {
         Teacher existingTeacher =
-                teacherRepository.findById(teacher.getUsername()).orElseThrow(() -> new EntityNotFoundException(
+                teacherRepository.findById(teacher.getId()).orElseThrow(() -> new EntityNotFoundException(
                         "Teacher " +
-                                "not found with ID: " + teacher.getUsername()));
+                                "not found with ID: " + teacher.getId()));
         existingTeacher.setName(teacher.getName());
         existingTeacher.setAge(teacher.getAge());
         existingTeacher.setGender(teacher.getGender());
@@ -239,16 +239,25 @@ public class TeacherService extends UserService {
      * @param aclass the class to be updated.
      * @return the updated class.
      */
-    public Aclass updateClass(Aclass aclass) {
-        Aclass existingClass = aclassRepository.findById(aclass.getId()).orElse(null);
+    public Aclass updateClass(String classId, AclassDto aclass) {
+        Aclass existingClass = aclassRepository.findById(classId).orElse(null);
         if (existingClass == null) {
+            logger.info("No such class.");
             return null;
         }
         existingClass.setTitle(aclass.getTitle());
         existingClass.setDescription(aclass.getDescription());
-        existingClass.setTeacher(aclass.getTeacher());
-        existingClass.setCourse(aclass.getCourse());
         existingClass.setGrade(aclass.getGrade());
+
+        Teacher teacher = teacherRepository.findById(aclass.getTeacherId()).orElse(null);
+        Course course = courseRepository.findById(aclass.getCourseId()).orElse(null);
+        if (teacher==null || course==null){
+            logger.info("No such teacher or course.");
+            return null;
+        }
+
+        existingClass.setTeacher(teacher);
+        existingClass.setCourse(course);
         return aclassRepository.save(existingClass);
     }
 
@@ -311,14 +320,29 @@ public class TeacherService extends UserService {
      * @param classId id of the class
      * @return true if there are notification to send, false otherwise.
      */
-    public AttendanceMeta getNotification(String classId) {
-        AttendanceMeta toNotify = attendanceMetaRepository.findFirstByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(classId, LocalDateTime.now());
+    public List<AttendanceMeta> getNotification(String classId) {
+        List<AttendanceMeta> toNotify = attendanceMetaRepository.findByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(classId, LocalDateTime.now());
         if (toNotify==null)
             return null;
-        if (toNotify.hasNotified())
-            return null;
-        toNotify.setNotified(true);
-        attendanceMetaRepository.save(toNotify);
+        for (AttendanceMeta meta : toNotify){
+            meta.setNotified(true);
+            attendanceMetaRepository.save(meta);
+        }
         return toNotify;
+    }
+
+    /**
+     * Teacher change password.
+     * @param teacherId the id of the teacher.
+     * @param password the new password.
+     * @return Teacher if success, null otherwise.
+     */
+    public Teacher updatePassword(String teacherId, String password) {
+        Teacher teacher = teacherRepository.findById(teacherId).orElse(null);
+        if (teacher == null) {
+            return null;
+        }
+        teacher.setPassword(password);
+        return teacherRepository.save(teacher);
     }
 }
