@@ -1,11 +1,12 @@
 package com.codeisright.attendance.controller;
 
-import com.codeisright.attendance.cache.AclassDto;
-import com.codeisright.attendance.cache.AttendanceDto;
-import com.codeisright.attendance.cache.MetaDto;
+import com.codeisright.attendance.dto.AclassDto;
+import com.codeisright.attendance.dto.AttendanceDto;
+import com.codeisright.attendance.dto.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.service.StudentService;
 import com.codeisright.attendance.service.TeacherService;
+import com.codeisright.attendance.view.AclassInfo;
 import com.codeisright.attendance.view.StudentInfo;
 import com.codeisright.attendance.view.TeacherInfo;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +42,12 @@ public class UserBehaviorController {
         this.studentService = studentService;
     }
 
+    private Map<String, Object> getMap(String key, Object info) {
+        Map<String, Object> result = new HashMap<>();
+        result.put(key, info);
+        return result;
+    }
+
     /**
      * 获取教师个人信息
      *
@@ -47,9 +55,10 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/getProfile")
     @PreAuthorize("#id == authentication.principal.username")
-    public TeacherInfo getTeacherProfile(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getTeacherProfile(@PathVariable String id) {
         logger.info("Get teacher profile request received");
-        return teacherService.getTeacherInfoById(id);
+        TeacherInfo result = teacherService.getTeacherInfoById(id);
+        return ResponseEntity.ok(getMap("teacher", result));
     }
 
     /**
@@ -123,10 +132,14 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes")
     @PreAuthorize("#id == authentication.principal.username")
-    public List<AclassDto> getTeacherClasses(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getTeacherClasses(@PathVariable String id) {
         logger.info("Get teacher classes request received");
-        List<Aclass> toReturn = teacherService.getClassByTeacherId(id);
-        return AclassDto.Convert(toReturn);
+        List<AclassInfo> result = teacherService.getClassInfoByTeacherId(id);
+        if (result == null) {
+            logger.info("not found teacher");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "还未创建任何班级"));
+        }
+        return ResponseEntity.ok(getMap("classes", result));
     }
 
     /**
@@ -136,9 +149,16 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public AclassDto getTeacherClass(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, Object>> getTeacherClass(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get teacher class request received");
-        return new AclassDto(teacherService.getClass(classId));
+        AclassInfo toReturn = teacherService.getClassInfo(classId);
+        if (toReturn == null) {
+            logger.info("Class not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "不存在的班级"));
+        }
+        return ResponseEntity.ok(getMap("class", toReturn));
     }
 
     /**
@@ -148,9 +168,16 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes/{classId}/course")
     @PreAuthorize("#id == authentication.principal.username")
-    public Course getClassCourse(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, Object>> getClassCourse(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get class course request received");
-        return teacherService.getClassCourse(classId);
+        Course toReturn = teacherService.getClassCourse(classId);
+        if (toReturn == null) {
+            logger.info("Course not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "不存在的课程"));
+        }
+        return ResponseEntity.ok(getMap("course", toReturn));
     }
 
     /**
@@ -161,10 +188,14 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes/{classId}/students")
     @PreAuthorize("#id == authentication.principal.username")
-    public Page<StudentInfo> getTeacherClassStudents(@PathVariable String id, @PathVariable String classId,
+    public ResponseEntity<Map<String, Object>> getTeacherClassStudents(@PathVariable String id, @PathVariable String classId,
                                                      @RequestParam(defaultValue = "0") int page) {
         logger.info("Get class students request received");
-        return teacherService.getClassStudentsPage(classId, page);
+        if (teacherService.getClassInfo(classId) == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message","不存在的班级"));
+        }
+        Page<StudentInfo> result = teacherService.getClassStudentsPage(classId, page);
+        return ResponseEntity.ok(getMap("Page",result));
     }
 
     /**
@@ -175,9 +206,16 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/classes/{classId}/students/{studentId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public StudentInfo getStudent(@PathVariable String id, @PathVariable String studentId) {
+    public ResponseEntity<Map<String, Object>> getStudent(@PathVariable String id, @PathVariable String studentId) {
         logger.info("Get student request received");
-        return teacherService.getStudentInfo(studentId);
+        StudentInfo toReturn = teacherService.getStudentInfo(studentId);
+        if (toReturn == null) {
+            logger.info("Student not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "找不到该学生"));
+        }
+        return ResponseEntity.ok(getMap("student", toReturn));
     }
 
     /**
@@ -185,14 +223,20 @@ public class UserBehaviorController {
      *
      * @param id      教师id
      * @param classId 班级id
-     * @return 签到记录列表分页
+     * @return 签到记录列表分页，如果班级不存在会返回404
      */
     @GetMapping("/teacher/classes/{classId}/meta")
     @PreAuthorize("#id == authentication.principal.username")
-    public Page<MetaDto> getMetaList(@PathVariable String id, @PathVariable String classId,
-                                            @RequestParam(defaultValue = "0") int page) {
+    public ResponseEntity<Map<String, Object>> getMetaList(@PathVariable String id, @PathVariable String classId,
+                                                           @RequestParam(defaultValue = "0") int page) {
         logger.info("Get meta list request received");
-        return MetaDto.Convert(teacherService.getMetasByClassIdPage(classId, page));
+        if (teacherService.getClassInfo(classId) == null) {
+            logger.info("Class not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "找不到该班级"));
+        }
+        return ResponseEntity.ok(getMap("Page", MetaDto.Convert(teacherService.getMetasByClassIdPage(classId, page))));
     }
 
     /**
@@ -203,9 +247,16 @@ public class UserBehaviorController {
      */
     @GetMapping("/teacher/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public MetaDto getAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
+    public ResponseEntity<Map<String, Object>> getAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
         logger.info("Get meta request received");
-        return new MetaDto(teacherService.getMetaByMetaId(metaId));
+        AttendanceMeta result = teacherService.getMetaByMetaId(metaId);
+        if (result == null) {
+            logger.info("Meta not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "未找到该签到发布记录"));
+        }
+        return ResponseEntity.ok(getMap("meta", new MetaDto(result)));
     }
 
     /**
@@ -222,23 +273,48 @@ public class UserBehaviorController {
         return teacherService.getAttendanceQR(metaId);
     }
 
+    private List<Map<String, String>> getStuInfoMapList(List<StudentInfo> list) {
+        List<Map<String, String>> sb = new ArrayList<>();
+        for (StudentInfo studentInfo : list) {
+            HashMap<String, String> map = new HashMap<>();
+            map.put("studentId", studentInfo.getId());
+            map.put("studentName", studentInfo.getName());
+            map.put("age", studentInfo.getAge() + "");
+            map.put("gender", studentInfo.getGender());
+            map.put("major", studentInfo.getMajor());
+            map.put("description", studentInfo.getDescription());
+            sb.add(map);
+        }
+        return sb;
+    }
+
     /**
      * 教师获取班级学生签到情况
      *
      * @param id      教师id
      * @param classId 班级id
      * @param metaId  签到记录id
+     * @return {"absent": [stu1, stu2, ...], "present": [stu1, stu2, ...]}
      */
     @GetMapping("/teacher/classes/{classId}/meta/{metaId}/list")  // 列出谁没签到，谁签到了
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> getAttendanceCircumstance(@PathVariable String id, @PathVariable String classId,
-                                                             @PathVariable String metaId) {
+    public ResponseEntity<Map<String, List<Map<String, String>>>> getAttendanceCircumstance(@PathVariable String id,
+                                                                                            @PathVariable String classId,
+                                                                                            @PathVariable String metaId) {
         logger.info("Get attendance circumstance request received");
         List<List<StudentInfo>> circumstance = teacherService.getAttendanceCircumstance(classId, metaId);
 
-        Map<String, String> toReturn = new HashMap<>();
-        toReturn.put("absent", circumstance.get(0).toString());
-        toReturn.put("present", circumstance.get(1).toString());
+        if (circumstance == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, List<Map<String, String>>> toReturn = new HashMap<>();
+        List<StudentInfo> absent = circumstance.get(0);
+        List<StudentInfo> present = circumstance.get(1);
+        List<Map<String, String>> absentMap = getStuInfoMapList(absent);
+        List<Map<String, String>> presentMap = getStuInfoMapList(present);
+        toReturn.put("absent", absentMap);
+        toReturn.put("present", presentMap);
 
         return ResponseEntity.ok(toReturn);
     }
@@ -267,28 +343,39 @@ public class UserBehaviorController {
     }
 
     /**
-     * 教师注册
-     *
-     * @param id      教师id
-     * @param teacher 教师信息
-     */
-    @PostMapping("/teacher/register")
-    @PreAuthorize("#id == authentication.principal.username")
-    public TeacherInfo addTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
-        logger.info("Add teacher request received");
-        return teacherService.addTeacher(teacher).toTeacherInfo();
-    }
-
-    /**
      * 更新教师信息
      *
-     * @param teacher 教师信息
+     * @param teacherInfo 教师信息
      */
     @PutMapping("/teacher")
     @PreAuthorize("#id == authentication.principal.username")
-    public TeacherInfo updateTeacher(@PathVariable String id, @RequestBody Teacher teacher) {
+    public ResponseEntity<Map<String, Object>> updateTeacher(@PathVariable String id,
+                                                             @RequestBody TeacherInfo teacherInfo) {
         logger.info("Update teacher request received");
-        return teacherService.updateTeacher(teacher).toTeacherInfo();
+        if (teacherService.getTeacherById(id) == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的老师"));
+        }
+        TeacherInfo result = teacherService.updateTeacher(teacherInfo).toTeacherInfo();
+        return ResponseEntity.ok(getMap("teacher", result));
+    }
+
+    /**
+     * 教师更改密码
+     *
+     * @param id          教师id
+     * @param newPassword 新密码
+     * @return Teacher 对象
+     */
+    @PutMapping("/teacher/newpassword")
+    @PreAuthorize("#id == authentication.principal.username")
+    public ResponseEntity<Map<String, Object>> updatePassword(@PathVariable String id,
+                                                              @RequestBody String newPassword) {
+        logger.info("Update password request received");
+        Teacher result = teacherService.updatePassword(id, newPassword);
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的老师"));
+        }
+        return ResponseEntity.ok(getMap("teacher", result));
     }
 
     /**
@@ -311,7 +398,7 @@ public class UserBehaviorController {
     }
 
     /**
-     * 发布签到
+     * 发布签到，发布的Body中不需要包含id，由后端生成
      *
      * @param id   教师id
      * @param meta 签到记录
@@ -319,10 +406,14 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes/{classId}/meta")
     @PreAuthorize("#id == authentication.principal.username")
-    public MetaDto announce(@PathVariable String id, @PathVariable String classId,
-                                   @RequestBody MetaDto meta) {
+    public ResponseEntity<Map<String, Object>> announce(@PathVariable String id, @PathVariable String classId,
+                            @RequestBody MetaDto meta) {
         logger.info("Announce request received");
-        return new MetaDto(teacherService.announce(classId, meta));
+        AttendanceMeta result = teacherService.announce(classId, meta);
+        if (result == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的班级"));
+        }
+        return ResponseEntity.ok(getMap("meta", result));
     }
 
     /**
@@ -333,22 +424,31 @@ public class UserBehaviorController {
      */
     @PutMapping("/teacher/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public AclassDto updateClass(@PathVariable String id, @RequestBody Aclass aclass) {
+    public ResponseEntity<Map<String, Object>> updateClass(@PathVariable String id, @PathVariable String classId, @RequestBody AclassDto aclass) {
         logger.info("Update class request received");
-        return new AclassDto(teacherService.updateClass(aclass));
+        Aclass result = teacherService.updateClass(classId, aclass);
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的班级、老师或课程"));
+        }
+        return ResponseEntity.ok(getMap("class", result.toAclassInfo()));
     }
 
     /**
-     * 更新签到
+     * 更新签到，以url中的metaId为主，不会考虑meta中的id
      *
      * @param id   教师id
      * @param meta 签到记录
      */
     @PutMapping("/teacher/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public MetaDto updateAttendanceMeta(@PathVariable String id, @RequestBody MetaDto meta, @PathVariable String metaId) {
+    public ResponseEntity<Map<String, Object>> updateAttendanceMeta(@PathVariable String id, @RequestBody MetaDto meta,
+                                        @PathVariable String metaId) {
         logger.info("Update meta request received");
-        return new MetaDto(teacherService.updateAttendanceMeta(metaId, meta));
+        AttendanceMeta result = teacherService.updateAttendanceMeta(metaId, meta);
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的签到记录"));
+        }
+        return ResponseEntity.ok(getMap("meta", new MetaDto(result)));
     }
 
     /**
@@ -358,17 +458,16 @@ public class UserBehaviorController {
      */
     @DeleteMapping("/teacher")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String,String>> deleteTeacher(@PathVariable String id) {
+    public ResponseEntity<Map<String, String>> deleteTeacher(@PathVariable String id) {
         logger.info("Delete teacher request received");
         teacherService.deleteTeacher(id);
-        if(teacherService.getTeacherById(id) == null){
-            Map<String,String> map = new HashMap<>();
-            map.put("status","success");
+        if (teacherService.getTeacherById(id) == null) {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "success");
             return ResponseEntity.ok(map);
-        }
-        else{
-            Map<String,String> map = new HashMap<>();
-            map.put("status","fail");
+        } else {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "fail");
             return ResponseEntity.ok(map);
         }
     }
@@ -384,14 +483,13 @@ public class UserBehaviorController {
     public ResponseEntity<Map<String, String>> deleteClass(@PathVariable String id, @PathVariable String classId) {
         logger.info("Delete class request received");
         teacherService.deleteClass(classId);
-        if(teacherService.getClassById(classId) == null){
-            Map<String,String> map = new HashMap<>();
-            map.put("status","success");
+        if (teacherService.getClassById(classId) == null) {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "success");
             return ResponseEntity.ok(map);
-        }
-        else{
-            Map<String,String> map = new HashMap<>();
-            map.put("status","fail");
+        } else {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "fail");
             return ResponseEntity.ok(map);
         }
     }
@@ -404,17 +502,17 @@ public class UserBehaviorController {
      */
     @DeleteMapping("/teacher/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> deleteAttendanceMeta(@PathVariable String id, @PathVariable String metaId) {
+    public ResponseEntity<Map<String, String>> deleteAttendanceMeta(@PathVariable String id,
+                                                                    @PathVariable String metaId) {
         logger.info("Delete meta request received");
         teacherService.deleteAttendanceMeta(metaId);
-        if (teacherService.getMetaByMetaId(metaId) == null){
-            Map<String,String> map = new HashMap<>();
-            map.put("status","success");
+        if (teacherService.getMetaByMetaId(metaId) == null) {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "success");
             return ResponseEntity.ok(map);
-        }
-        else{
-            Map<String,String> map = new HashMap<>();
-            map.put("status","fail");
+        } else {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "fail");
             return ResponseEntity.ok(map);
         }
     }
@@ -427,14 +525,13 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> addClassStudent(@PathVariable String id, @RequestBody AclassDto clazz) {
+    public ResponseEntity<Map<String, Object>> addClassStudent(@PathVariable String id, @RequestBody AclassDto clazz) {
         logger.info("Add class request received");
         Aclass result = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
-        if (teacherService.getClassById(result.getId()) != null){
-            return ResponseEntity.ok(new AclassDto(result).toMap());
-        } else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        if (teacherService.getClassById(result.getId()) == null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的老师或课程"));
         }
+        return ResponseEntity.ok(getMap("class", result.toAclassInfo()));
     }
 
     /**
@@ -447,7 +544,8 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes/{classId}/postExcel")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> addClassStudentByExcel(@PathVariable String id, @PathVariable String classId, @RequestParam(
+    public ResponseEntity<Map<String, String>> addClassStudentByExcel(@PathVariable String id,
+                                                                      @PathVariable String classId, @RequestParam(
             "file") MultipartFile file) {
         logger.info("Add class student by excel request received");
         if (!teacherService.getClassByTeacherId(id).contains(teacherService.getClassById(classId))) {  // 判断是否为该教师的班级
@@ -476,32 +574,39 @@ public class UserBehaviorController {
     @DeleteMapping("/teacher/classes/{classId}/student/{studentId}")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Map<String, String>> deleteClassStudent(@PathVariable String id, @PathVariable String classId,
-                                      @PathVariable String studentId) {
+                                                                  @PathVariable String studentId) {
         logger.info("Delete class student request received");
         teacherService.deleteClassStudent(classId, studentId);
-        if (!teacherService.isStudentInClass(classId, studentId)){
-            Map<String,String> map = new HashMap<>();
-            map.put("status","success");
+        if (!teacherService.isStudentInClass(classId, studentId)) {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "success");
             return ResponseEntity.ok(map);
-        }
-        else{
-            Map<String,String> map = new HashMap<>();
-            map.put("status","fail");
+        } else {
+            Map<String, String> map = new HashMap<>();
+            map.put("status", "fail");
             return ResponseEntity.ok(map);
         }
     }
 
     /**
      * 教师获取消息，只会返回 *当前班级* *最新* *已到期* 的签到
+     * 发送的逻辑是，如果签到记录符合发送条件且还没被发送过，则发送并标记已发送
+     * 下次再次请求除非再有新记录符合条件否则不会发送新消息
+     * 发送的是该班级所有还没有通知的签到记录
      *
      * @param id 教师id
-     * @return 如果没有新消息则空的MetaDto，否则返回最新的MetaDto
+     * @return 一个通知列表[meta]
      */
     @GetMapping("/teacher/notification/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public MetaDto getNotification(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, Object>> getNotification(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get notification request received");
-        return new MetaDto(teacherService.getNotification(classId));
+        List<AttendanceMeta> result = teacherService.getNotification(classId);
+        if (result.size()==0) {
+            return ResponseEntity.ok(getMap("message", "没有新消息"));
+        } else {
+            return ResponseEntity.ok(getMap("meta", MetaDto.Convert(result)));
+        }
     }
 
 
@@ -514,9 +619,14 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/getProfile")
     @PreAuthorize("#id == authentication.principal.username")
-    public StudentInfo getStudentProfile(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getStudentProfile(@PathVariable String id) {
         logger.info("Get student profile request received");
-        return studentService.getStudentInfoById(id);
+        StudentInfo result = studentService.getStudentInfoById(id);
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message","学生还没加入任何班级"));
+        } else {
+            return ResponseEntity.ok(getMap("student", result));
+        }
     }
 
     /**
@@ -576,9 +686,14 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}/course")
     @PreAuthorize("#id == authentication.principal.username")
-    public Course getStudentClassCourse(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, Object>> getStudentClassCourse(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get student class course request received");
-        return studentService.getClassCourse(classId);
+        Course result = studentService.getClassCourse(classId);
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message","找不到这个班级"));
+        } else {
+            return ResponseEntity.ok(getMap("course", result));
+        }
     }
 
     /**
@@ -588,9 +703,14 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes")
     @PreAuthorize("#id == authentication.principal.username")
-    public List<AclassDto> getStudentClasses(@PathVariable String id) {
+    public ResponseEntity<Map<String, Object>> getStudentClasses(@PathVariable String id) {
         logger.info("Get student classes request received");
-        return AclassDto.Convert(studentService.getClassByStudentId(id));
+        List<AclassInfo> result = studentService.getClassInfoByStudentId(id);
+        if (result == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message","找不到这个学生"));
+        } else {
+            return ResponseEntity.ok(getMap("classes", result));
+        }
     }
 
     /**
@@ -602,14 +722,16 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}/students")
     @PreAuthorize("#id == authentication.principal.username")
-//    public List<StudentInfo> getStudentClassStudents(@PathVariable String id, @PathVariable String classId) {
-//        logger.info();("Get student class students request received");
-//        return studentService.getClassStudents(classId);
-//    }
-    public Page<StudentInfo> getStudentClassStudents(@PathVariable String id, @PathVariable String classId,
+    public ResponseEntity<Map<String, Object>> getStudentClassStudents(@PathVariable String id, @PathVariable String classId,
                                                      @RequestParam(value = "page", defaultValue = "0") int page) {
         logger.info("Get student class students request received");
-        return studentService.getClassStudentsPage(classId, page);
+        if (teacherService.getClassInfo(classId) == null) {
+            logger.info("Class not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "找不到该班级"));
+        }
+        return ResponseEntity.ok(getMap("Page",studentService.getClassStudentsPage(classId, page)));
     }
 
     /**
@@ -619,9 +741,13 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public AclassDto getStudentClass(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, Object>> getStudentClass(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get student class request received");
-        return new AclassDto(studentService.getClassById(classId));
+        Aclass result = studentService.getClassById(classId);
+        if (result==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的班级"));
+        }
+        return ResponseEntity.ok(getMap("class",result.toAclassInfo()));
     }
 
     /**
@@ -631,24 +757,38 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}/teacher")
     @PreAuthorize("#id == authentication.principal.username")
-    public TeacherInfo getStudentClassTeacher(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, Object>> getStudentClassTeacher(@PathVariable String id, @PathVariable String classId) {
         logger.info("Get student class teacher request received");
-        return studentService.getTeacherByClassId(classId);
+        if (teacherService.getClassInfo(classId) == null) {
+            logger.info("Class not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "找不到该班级"));
+        }
+        TeacherInfo result = studentService.getTeacherByClassId(classId);
+        return ResponseEntity.ok(getMap("teacher",result));
     }
 
     /**
      * 获取某个班级的所有签到
      *
      * @param classId 班级id
-     * @param page 页码
+     * @param page    页码
      * @return 签到列表page
      */
     @GetMapping("/student/classes/{classId}/meta")
     @PreAuthorize("#id == authentication.principal.username")
-    public Page<MetaDto> getStudentAttendanceMeta(@PathVariable String id, @PathVariable String classId,
-                                                         @RequestParam(value = "page", defaultValue = "0") int page) {
+    public ResponseEntity<Map<String, Object>> getStudentAttendanceMeta(@PathVariable String id, @PathVariable String classId,
+                                                  @RequestParam(value = "page", defaultValue = "0") int page) {
         logger.info("Get student class attendance meta request received");
-        return MetaDto.Convert(studentService.getMetasByClassIdPage(classId, page));
+        if (teacherService.getClassInfo(classId) == null) {
+            logger.info("Class not found");
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body(getMap("message", "找不到该班级"));
+        }
+        Page<AttendanceMeta> result = studentService.getMetasByClassIdPage(classId, page);
+        return ResponseEntity.ok(getMap("Page", MetaDto.Convert(result)));
     }
 
     /**
@@ -659,15 +799,14 @@ public class UserBehaviorController {
      */
     @GetMapping("/student/classes/{classId}/meta/{metaId}")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> getStudentClassMetaRecord(@PathVariable String id, @PathVariable String metaId) {
+    public ResponseEntity<Map<String, Object>> getStudentClassMetaRecord(@PathVariable String id,
+                                                                         @PathVariable String metaId) {
         logger.info("Get student class meta record request received");
         Attendance record = studentService.getAttendanceByStudentAndMeta(id, metaId);
         if (record == null) {
-            return ResponseEntity.notFound().build();
-        } else {
-            AttendanceDto attendanceDto = new AttendanceDto(record);
-            return ResponseEntity.ok(attendanceDto.toMap());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "学生没有参加这次签到"));
         }
+        return ResponseEntity.ok(getMap("record", new AttendanceDto(record)));
     }
 
     /**
@@ -679,7 +818,8 @@ public class UserBehaviorController {
      */
     @PostMapping("/student/checkin1")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> checkin1(@PathVariable String id, @RequestBody AttendanceDto attendance) {
+    public ResponseEntity<Map<String, String>> checkin1(@PathVariable String id,
+                                                        @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin1 request received");
         String classId = attendance.getClassId();
         boolean res = studentService.doCheckin(id, classId, 1);
@@ -703,7 +843,8 @@ public class UserBehaviorController {
      */
     @PutMapping("/student/checkin2")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> checkin2(@PathVariable String id, @RequestBody AttendanceDto attendance) {
+    public ResponseEntity<Map<String, String>> checkin2(@PathVariable String id,
+                                                        @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin2 request received");
         String classId = attendance.getClassId();
         Long Latitude = attendance.getLatitude();
@@ -729,7 +870,9 @@ public class UserBehaviorController {
      */
     @PutMapping("/student/checkin3")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> checkin3(@PathVariable String id, @RequestBody AttendanceDto attendance, @RequestParam String QRCode) {
+    public ResponseEntity<Map<String, String>> checkin3(@PathVariable String id,
+                                                        @RequestBody AttendanceDto attendance,
+                                                        @RequestParam String QRCode) {
         logger.info("Student checkin3 request received");
         String classId = attendance.getClassId();
         boolean res = studentService.doQR(id, classId, QRCode);
