@@ -143,11 +143,6 @@ public class Student implements UserDetails {
             public String getDescription() {
                 return Student.this.getDescription();
             }
-
-            @Override
-            public String toString() {
-                return Student.this.toString();
-            }
         };
     }
 }
