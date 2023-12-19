@@ -58,14 +58,6 @@ public class Attendance {
         this.student = student;
     }
 
-    public Aclass getAClass() {
-        return aclass;
-    }
-
-    public void setAClass(Aclass aClass) {
-        this.aclass = aClass;
-    }
-
     public int getStatus() {
         return status;
     }
