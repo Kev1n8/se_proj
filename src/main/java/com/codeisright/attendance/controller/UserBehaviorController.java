@@ -594,7 +594,7 @@ public class UserBehaviorController {
     }
 
     /**
-     * 教师获取消息，只会返回 *当前班级* *最新* *已到期* 的签到
+     * 教师获取消息，只会返回 *属于该老师* *已到期* *还没通知过* 的签到
      * 发送的逻辑是，如果签到记录符合发送条件且还没被发送过，则发送并标记已发送
      * 下次再次请求除非再有新记录符合条件否则不会发送新消息
      * 发送的是该班级所有还没有通知的签到记录
@@ -602,12 +602,12 @@ public class UserBehaviorController {
      * @param id 教师id
      * @return 一个通知列表[meta]
      */
-    @GetMapping("/teacher/notification/{classId}")
+    @GetMapping("/teacher/notification")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, Object>> getNotification(@PathVariable String id, @PathVariable String classId) {
+    public ResponseEntity<Map<String, Object>> getNotification(@PathVariable String id) {
         logger.info("Get notification request received");
-        List<AttendanceMeta> result = teacherService.getNotification(classId);
-        if (result.size()==0) {
+        List<AttendanceMeta> result = teacherService.getNotification(id);
+        if (result==null) {
             return ResponseEntity.ok(getMap("message", "没有新消息"));
         } else {
             return ResponseEntity.ok(getMap("meta", MetaDto.Convert(result)));
