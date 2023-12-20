@@ -170,7 +170,7 @@ public class TeacherService extends UserService {
         }
         List<List<List<StudentInfo>>> circumstances = new ArrayList<>();
         for (AttendanceMeta meta : metas) {
-            circumstances.add(getAttendanceCircumstance(meta.getId()));
+            circumstances.add(0, getAttendanceCircumstance(meta.getId()));
         }
         logger.info("Done collecting records for class with id: " + classId);
         return ExcelHandler.save(path, metas, circumstances);
