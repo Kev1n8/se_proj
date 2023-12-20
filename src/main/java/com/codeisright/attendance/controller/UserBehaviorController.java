@@ -338,10 +338,12 @@ public class UserBehaviorController {
         if (excelBytes == null || excelBytes.length == 0) {
             return ResponseEntity.noContent().build();
         }
+        String title = teacherService.getClassInfo(classId).getTitle();
         ByteArrayResource resource = new ByteArrayResource(excelBytes);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(resource.contentLength());
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.setContentDispositionFormData("attachment", title + ".xlsx");
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
