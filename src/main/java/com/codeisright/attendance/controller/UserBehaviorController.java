@@ -296,17 +296,15 @@ public class UserBehaviorController {
      * 教师获取班级学生签到情况
      *
      * @param id      教师id
-     * @param classId 班级id
      * @param metaId  签到记录id
-     * @return {"absent": [stu1, stu2, ...], "present": [stu1, stu2, ...]}
+     * @return {"absent": [stu1, stu2, ...], "present": [stu1, stu2, ...], "makeup": [stu1, stu2, ...]"}
      */
-    @GetMapping("/teacher/classes/{classId}/meta/{metaId}/list")  // 列出谁没签到，谁签到了
+    @GetMapping("/teacher/meta/{metaId}/list")  // 列出谁没签到，谁签到了
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Map<String, List<Map<String, String>>>> getAttendanceCircumstance(@PathVariable String id,
-                                                                                            @PathVariable String classId,
                                                                                             @PathVariable String metaId) {
         logger.info("Get attendance circumstance request received");
-        List<List<StudentInfo>> circumstance = teacherService.getAttendanceCircumstance(classId, metaId);
+        List<List<StudentInfo>> circumstance = teacherService.getAttendanceCircumstance(metaId);
 
         if (circumstance == null) {
             return ResponseEntity.notFound().build();
@@ -315,10 +313,13 @@ public class UserBehaviorController {
         Map<String, List<Map<String, String>>> toReturn = new HashMap<>();
         List<StudentInfo> absent = circumstance.get(0);
         List<StudentInfo> present = circumstance.get(1);
+        List<StudentInfo> makeup = circumstance.get(2);
+
         List<Map<String, String>> absentMap = getStuInfoMapList(absent);
         List<Map<String, String>> presentMap = getStuInfoMapList(present);
         toReturn.put("absent", absentMap);
         toReturn.put("present", presentMap);
+        toReturn.put("makeup", getStuInfoMapList(makeup));
 
         return ResponseEntity.ok(toReturn);
     }
@@ -418,7 +419,7 @@ public class UserBehaviorController {
         if (result == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的班级"));
         }
-        return ResponseEntity.ok(getMap("meta", result));
+        return ResponseEntity.ok(getMap("meta", new MetaDto(result)));
     }
 
     /**
@@ -611,6 +612,26 @@ public class UserBehaviorController {
             return ResponseEntity.ok(getMap("message", "没有新消息"));
         } else {
             return ResponseEntity.ok(getMap("meta", MetaDto.Convert(result)));
+        }
+    }
+
+    /**
+     * 给学生补签
+     * 在数据库中查找meta，然后检查是否在该班级，然后才能补签，只需要提供签到DTO(只需包含学号和metaId，其他项为空串)
+     *
+     * @param id      教师id
+     * @param attendanceDto 存放学生Id，metaId
+     */
+    @PostMapping("/teacher/makeup")
+    @PreAuthorize("#id == authentication.principal.username")
+    public ResponseEntity<Map<String, Object>> supplementAttendance(@PathVariable String id,
+                                                                    @RequestBody AttendanceDto attendanceDto) {
+        logger.info("Supplement attendance request received");
+        Attendance res = teacherService.makeUpAttendance(attendanceDto);
+        if (res!=null) {
+            return ResponseEntity.ok(getMap("attendance", new AttendanceDto(res)));
+        } else {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(getMap("message", "补签失败"));
         }
     }
 
@@ -897,7 +918,8 @@ public class UserBehaviorController {
             case 2 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "学生还没有完成签到Step1或状态不为1"));
             case 3 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "有效期已过"));
             case 4 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "地理位置不符合要求"));
-            case 5 -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "签到时发生未知错误"));
+            case 5 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "已经完成签到要求，无需继续签到"));
+            case 6 -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "签到时发生未知错误"));
             default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "系统发生未知错误"));
         };
     }
@@ -926,7 +948,8 @@ public class UserBehaviorController {
             case 3 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "有效期已过"));
             case 4 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "二维码已过期"));
             case 5 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "未知的二维码"));
-            case 6 -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "签到时发生未知错误"));
+            case 6 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "已经完成签到了"));
+            case 7 -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "签到时发生未知错误"));
             default -> ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message", "系统发生未知错误"));
         };
     }
