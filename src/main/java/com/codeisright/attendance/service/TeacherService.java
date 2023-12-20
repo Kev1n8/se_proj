@@ -16,8 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -320,17 +319,23 @@ public class TeacherService extends UserService {
 
     /**
      * Check if there are notification to send.  not notified and finished
-     * @param classId id of the class
+     * @param teacherId id of the teacher
      * @return true if there are notification to send, false otherwise.
      */
-    public List<AttendanceMeta> getNotification(String classId) {
-        List<AttendanceMeta> toNotify = attendanceMetaRepository.findByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(classId, LocalDateTime.now());
-        if (toNotify==null)
-            return null;
-        for (AttendanceMeta meta : toNotify){
-            meta.setNotified(true);
-            attendanceMetaRepository.save(meta);
+    public List<AttendanceMeta> getNotification(String teacherId) {
+        List<Aclass> properties = aclassRepository.findByTeacherId(teacherId);
+        List<AttendanceMeta> toNotify = new ArrayList<>();
+        for (Aclass clazz : properties){
+            List<AttendanceMeta> item = attendanceMetaRepository.findByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(clazz.getId(), LocalDateTime.now());
+            toNotify.addAll(item);
+            for (AttendanceMeta meta : item){
+                meta.setNotified(true);
+                attendanceMetaRepository.save(meta);
+            }
         }
+        if (toNotify.size()==0)
+            return null;
+        toNotify.sort(Comparator.comparing(AttendanceMeta::getDeadline).reversed());
         return toNotify;
     }
 
