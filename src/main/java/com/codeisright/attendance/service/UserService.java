@@ -204,7 +204,7 @@ public class UserService {
      */
     public List<AttendanceMeta> getMetasByClassId(String classId) {
         logger.debug("Getting all metas");
-        return attendanceMetaRepository.findByAclass_Id(classId);
+        return attendanceMetaRepository.findByAclass_IdOrderByDeadlineDesc(classId);
     }
 
     /**
