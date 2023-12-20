@@ -80,8 +80,9 @@ public class ExcelHandler {
         row = sheet.createRow(rowIndex);
         row.createCell(1).setCellValue("到课率");
         for (int i = 0; i < count.size(); i++) {
-            row.createCell(i + 2).setCellValue(1 - count.get(i) / (double) toWrite.size());
-            logger.info("Attendance rate of " + (i + 1) + " is " +(1 - count.get(i) / (double) toWrite.size()));
+            String num = String.format("%.2f", (1 - count.get(i) / (double) toWrite.size())*100);
+            row.createCell(i + 2).setCellValue(num+"%");
+            logger.info("Attendance rate of " + (i + 1) + " is " + num);
         }
 
         logger.info("Saving attendance to " + path);
