@@ -13,8 +13,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ExcelHandler {
     private static final Logger logger = LoggerFactory.getLogger(ExcelHandler.class);
@@ -25,25 +24,66 @@ public class ExcelHandler {
         Row row = sheet.createRow(0);
         row.createCell(0).setCellValue("Student ID");
         row.createCell(1).setCellValue("Student Name");
+
         for (int i = 0; i < metas.size(); i++) {
             row.createCell(i + 2).setCellValue("签到" + (i + 1));
         }
-        for (int i = 0; i < records.size(); i++) {
-            List<List<StudentInfo>> circumstance = records.get(i);
-            for (int j = 0; j < circumstance.size(); j++) {
+
+        TreeMap<String, List<String>> toWrite = new TreeMap<>();
+        HashMap<String, String> idToName = new HashMap<>();
+
+        for (List<List<StudentInfo>> circumstance : records) {  // 第几次签到
+            for (int j = 0; j < circumstance.size(); j++) {  // 第几种情况：成功、失败、补签
                 List<StudentInfo> students = circumstance.get(j);
-                for (int k = 0; k < students.size(); k++) {
-                    row = sheet.createRow(k + 1);
-                    row.createCell(0).setCellValue(students.get(k).getId()); // 有点冗余，但是不想改了
-                    row.createCell(1).setCellValue(students.get(k).getName());
-                    row.createCell(i + 2).setCellValue(j == 0 ? "√" : "×");
+                for (StudentInfo student : students) { // 第几个学生
+                    String id = student.getId();
+                    if (toWrite.get(id) == null) {
+                        idToName.put(id, student.getName());
+                        toWrite.put(id, new ArrayList<>(List.of(switch (j) {
+                            case 0 -> "√";
+                            case 1 -> "x";
+                            case 2 -> "补签";
+                            default -> "unknown";
+                        })));
+                    }
+                    else{
+                        toWrite.get(id).add(switch (j){
+                            case 0 -> "√";
+                            case 1 -> "x";
+                            case 2 -> "补签";
+                            default -> "unknown";
+                        });
+                    }
                 }
             }
-            // 创建到课率
-            row = sheet.createRow(sheet.getLastRowNum() + 2);
-            row.createCell(0).setCellValue("到课率");
-//            row.createCell(2).setCellValue(metas.get(i).getRate());
         }
+
+        int rowIndex = 1;
+        Vector<Integer> count = new Vector<>();
+        count.setSize(records.size());
+        Collections.fill(count, 0);
+        for (String id : toWrite.keySet()) {
+            row = sheet.createRow(rowIndex++);
+            row.createCell(0).setCellValue(id);
+            row.createCell(1).setCellValue(idToName.get(id));
+            List<String> attendance = toWrite.get(id);
+            for (int i = 0; i < attendance.size(); i++) {
+                String status = attendance.get(i);
+                row.createCell(i + 2).setCellValue(status);
+                if(status.equals("x")){
+                    count.set(i, count.get(i) + 1);
+                }
+            }
+        }
+
+        rowIndex++;
+        row = sheet.createRow(rowIndex);
+        row.createCell(1).setCellValue("到课率");
+        for (int i = 0; i < count.size(); i++) {
+            row.createCell(i + 2).setCellValue(1 - count.get(i) / (double) toWrite.size());
+            logger.info("Attendance rate of " + (i + 1) + " is " +(1 - count.get(i) / (double) toWrite.size()));
+        }
+
         logger.info("Saving attendance to " + path);
         byte[] toReturn = new byte[0];
         try (FileOutputStream fileOutputStream = new FileOutputStream(path, false);
