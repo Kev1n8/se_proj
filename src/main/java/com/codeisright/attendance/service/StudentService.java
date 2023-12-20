@@ -10,9 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -272,7 +270,7 @@ public class StudentService extends UserService {
      * @param latitute latitude of the current location
      * @param longitute longitude of the current location
      * @return 0 if successfully checked in, 1 if meta not exists, 2 if student hasn't done step1 checkin(status not 1),
-     * 3 if not in time, 4 if not acceptable location
+     * 3 if not in time, 4 if not acceptable location, 5 for no need to do location
      */
     public int doLocation(String studentId, String metaId, Long latitute, Long longitute) {
         LocalDateTime time = LocalDateTime.now();
@@ -283,6 +281,9 @@ public class StudentService extends UserService {
         Attendance original = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
         if(original == null) {
             return 2;
+        }
+        if(original.getStatus()>=latest_record.getRequirement()){
+            return 5;
         }
         if(original.getStatus() != 1) {
             return 2;
@@ -300,7 +301,7 @@ public class StudentService extends UserService {
             logger.info("Student: {} forwarded checkin for metaId: {}", studentId, metaId);
             return 0;
         }
-        return 5;
+        return 6;
     }
 
     /**
@@ -310,7 +311,7 @@ public class StudentService extends UserService {
      * @param metaId meta id
      * @param QRCode QRCode
      * @return 0 if successfully checked in, 1 if meta not exists, 2 if student hasn't done step2 checkin(status not 2),
-     * 3 if timeout, 4 if qr has expired, 5 if unknown qr, 6 for unknown error
+     * 3 if timeout, 4 if qr has expired, 5 if unknown qr, 6 if already checkin, 7 for unknown error
      */
     public int doQR(String studentId, String metaId, String QRCode) {
         LocalDateTime time = LocalDateTime.now();
@@ -321,6 +322,9 @@ public class StudentService extends UserService {
         Attendance original = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
         if (original == null) {
             return 2;
+        }
+        if (original.getStatus()>=latest_record.getRequirement()){
+            return 6;
         }
         if (original.getStatus() != 2) {
             return 2;
@@ -338,6 +342,6 @@ public class StudentService extends UserService {
             logger.info("Student: {} forwarded checkin for meta: {}", studentId, metaId);
             return 0;
         }
-        return 6;
+        return 7;
     }
 }
