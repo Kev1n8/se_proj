@@ -897,7 +897,7 @@ public class UserBehaviorController {
 
     /**
      * 地理位置签到，将检查地理位置是否满足要求，满足则更新Attendance表中的Status为2和Location
-     * 第二次签到需要的信息：学生id，班级id，经度，纬度，签到时间
+     * 第二次签到需要的信息：学生id，班级id，经度，纬度，签到时间，metaId
      *
      * @param id         学生id
      * @param attendance 签到信息
