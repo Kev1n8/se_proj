@@ -1,6 +1,7 @@
 package com.codeisright.attendance.service;
 
 import com.codeisright.attendance.dto.AclassDto;
+import com.codeisright.attendance.dto.AttendanceDto;
 import com.codeisright.attendance.dto.MetaDto;
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.dto.TeacherDto;
@@ -105,14 +106,38 @@ public class TeacherService extends UserService {
     }
 
     /**
-     * Give a list of two lists, the first list is the students who have checked in successfully,
-     * the second list is the students who are absent.
+     * Get students checkin supplement by metaId.
      * @param classId the classId of the class.
      * @param metaId the metaId of the attendance.
+     * @return a list of students who have checked in supplement.
      */
-    public List<List<StudentInfo>> getAttendanceCircumstance(String classId, String metaId) {
+    public List<StudentInfo> getStudentsCheckinSupplement(String classId, String metaId) {
+        List<Attendance> records = attendanceRepository.findByAclass_IdAndMeta_Id(classId, metaId);
+        List<StudentInfo> students = new ArrayList<>();
+        for (Attendance a : records) {
+            if (a.getStatus() == -1) {
+                students.add(studentRepository.findStudentInfoById(a.getStudent().getUsername()));
+            }
+        }
+        return students;
+    }
+
+    /**
+     * Give a list of 3 lists, the first list is the students who have checked in successfully,
+     * the second list is the students who are absent,
+     * the third list is the students who have checked in supplement-ly.
+     * @param metaId the metaId of the attendance.
+     */
+    public List<List<StudentInfo>> getAttendanceCircumstance(String metaId) {
+        AttendanceMeta target = attendanceMetaRepository.findById(metaId).orElse(null);
+        if (target == null){
+            return null;
+        }
+        String classId = target.getAclass().getId();
+
         List<StudentInfo> absentStudents = getClassStudents(classId);
         List<StudentInfo> success = getStudentsCheckinSuccess(classId, metaId);
+        List<StudentInfo> supplement = getStudentsCheckinSupplement(classId, metaId);
         for (StudentInfo s : success) {  // not efficient, but works
             for (StudentInfo a : absentStudents) {
                 if (s.getId().equals(a.getId())) {
@@ -121,7 +146,15 @@ public class TeacherService extends UserService {
                 }
             }
         }
-        return new ArrayList<>(List.of(success, absentStudents));
+        for (StudentInfo s : supplement) {
+            for (StudentInfo a : absentStudents) {
+                if (s.getId().equals(a.getId())) {
+                    absentStudents.remove(a);
+                    break;
+                }
+            }
+        }
+        return new ArrayList<>(List.of(success, absentStudents, supplement));
     }
 
     /**
@@ -131,13 +164,13 @@ public class TeacherService extends UserService {
      */
     public byte[] getClassExcel(String classId) {
         String path = "src/main/resources/static/excels/" + classId + ".xlsx";
-        List<AttendanceMeta> metas = attendanceMetaRepository.findByAclass_Id(classId);
+        List<AttendanceMeta> metas = attendanceMetaRepository.findByAclass_IdOrderByDeadlineDesc(classId);
         if (metas == null || metas.size() == 0) {
             return null;
         }
         List<List<List<StudentInfo>>> circumstances = new ArrayList<>();
         for (AttendanceMeta meta : metas) {
-            circumstances.add(getAttendanceCircumstance(classId, meta.getId()));
+            circumstances.add(getAttendanceCircumstance(meta.getId()));
         }
         logger.info("Done collecting records for class with id: " + classId);
         return ExcelHandler.save(path, metas, circumstances);
@@ -352,5 +385,35 @@ public class TeacherService extends UserService {
         }
         teacher.setPassword(password);
         return teacherRepository.save(teacher);
+    }
+
+    /**
+     * Make up for the absence of a student.
+     *
+     * @param attendanceDto dto contains studentId, metaId
+     * @return Attendance if success, null otherwise.
+     */
+    public Attendance makeUpAttendance(AttendanceDto attendanceDto){
+        String studentId = attendanceDto.getStudentId();
+        String metaId = attendanceDto.getMetaId();
+        Student student = studentRepository.findById(studentId).orElse(null);
+        if (student == null){
+            return null;
+        }
+        AttendanceMeta target = attendanceMetaRepository.findById(metaId).orElse(null);
+        if (target == null){
+            return null;
+        }
+        String classId = target.getAclass().getId();
+        Aclass clazz = aclassRepository.findById(classId).orElse(null);
+        if (clazz==null){
+            return null;
+        }
+        Enrollment enrollment = enrollmentRepository.findByAclass_IdAndStudent_Id(classId, studentId);
+        if (enrollment == null){
+            return null;
+        }
+        Attendance attendance = new Attendance(student, clazz, target, -1, LocalDateTime.now(), -1L, -1L);
+        return attendanceRepository.save(attendance);
     }
 }
