@@ -7,10 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AttendanceMetaRepository extends JpaRepository<AttendanceMeta, String> {
-    AttendanceMeta findFirstByAclass_IdOrderByDeadlineDesc(String classId);
-
-    List<AttendanceMeta> findByAclass_Id(String classId);
-
+    List<AttendanceMeta> findByAclass_IdOrderByDeadlineDesc(String classId);
 
     List<AttendanceMeta> findByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(String classId, LocalDateTime now);
 }
