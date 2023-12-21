@@ -2,15 +2,21 @@ package com.codeisright.attendance.service;
 
 import com.codeisright.attendance.data.*;
 import com.codeisright.attendance.dto.StudentDto;
+import com.codeisright.attendance.dto.StudentMetaRecord;
 import com.codeisright.attendance.repository.*;
 import com.codeisright.attendance.utils.QRCodeUtils;
 import com.codeisright.attendance.view.StudentInfo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional(rollbackFor = Exception.class)
@@ -108,7 +114,7 @@ public class StudentService extends UserService {
     }
 
     /**
-     * Get the attendance record of a student in a single metaAtt(if checkin step1 successfully before).
+     * Get the attendance record of a student in a single metaAtt(if at least checkin step1 successfully before).
      *
      * @param studentId student id
      * @param attendanceMetaId attendance meta id
@@ -119,7 +125,34 @@ public class StudentService extends UserService {
     }
 
     /**
-     * Get the attendance record of a student in a single class.
+     * Get a page of Student records(metas with boolean) of a class. PageSize=10
+     * Only when the meta has ended or the student has record(whether the status is -1 or 123)
+     * will it be returned.
+     *
+     * @param classId the id of the class.
+     * @param studentId the id of the student.
+     * @param page the page number.
+     * @return a page of Student records(metas with boolean) of a class.
+     */
+    public Page<StudentMetaRecord> getStudentRecords(String classId, String studentId, int page){
+        logger.debug("Getting student's records of a class. Page : " + page);
+        List<AttendanceMeta> all = getMetasByClassId(classId);
+        List<StudentMetaRecord> content = new ArrayList<>();
+        for (AttendanceMeta item : all){
+            Attendance record = getAttendanceByStudentAndMeta(studentId, item.getId());
+            if (record == null){
+                continue;
+            }
+            content.add(new StudentMetaRecord(item, record));
+        }
+
+        int start = page * 10;
+        int end = Math.min(start + 10, content.size());
+        return new PageImpl<>(content.subList(start, end), PageRequest.of(page, 10), content.size());
+    }
+
+    /**
+     * Return if the student is in the class.
      *
      * @param studentId student id
      * @param classId class id
