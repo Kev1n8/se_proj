@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Date;
 
+@CrossOrigin(origins = "http://localhost:8080")
 @RestController
 public class LoginController {
     private final Logger logger = LoggerFactory.getLogger(LoginController.class);
