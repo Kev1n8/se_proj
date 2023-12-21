@@ -839,6 +839,27 @@ public class UserBehaviorController {
     }
 
     /**
+     * 获取学生签到列表
+     *
+     * @param id 学生id
+     * @param classId 班级id
+     * @param page 页数
+     * @return 附带学生签到情况的签到列表分页
+     */
+    @GetMapping("/student/classes/{classId}/list")
+    @PreAuthorize("#id == authentication.principal.username")
+    public ResponseEntity<Map<String, Object>> getStudentClassMetaList(@PathVariable String id,
+                                                                       @PathVariable String classId,
+                                                                       @RequestParam(value = "page", defaultValue = "0") int page) {
+        logger.info("Get student request for class meta with status");
+        Page<StudentMetaRecord> res = studentService.getStudentRecords(classId, id, page);
+        if (res==null){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(getMap("message","发生未知错误"));
+        }
+        return ResponseEntity.ok(getMap("Page", res));
+    }
+
+    /**
      * 学生更新资料
      *
      * @param id      学生id
