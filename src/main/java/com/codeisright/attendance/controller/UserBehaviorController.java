@@ -298,7 +298,7 @@ public class UserBehaviorController {
      *
      * @param id      教师id
      * @param metaId  签到记录id
-     * @return {"absent": [stu1, stu2, ...], "present": [stu1, stu2, ...], "makeup": [stu1, stu2, ...]"}
+     * @return {"present": [stu1, stu2, ...], "absent": [stu1, stu2, ...], "makeup": [stu1, stu2, ...]"}
      */
     @GetMapping("/teacher/meta/{metaId}/list")  // 列出谁没签到，谁签到了
     @PreAuthorize("#id == authentication.principal.username")
@@ -312,8 +312,8 @@ public class UserBehaviorController {
         }
 
         Map<String, List<Map<String, String>>> toReturn = new HashMap<>();
-        List<StudentInfo> absent = circumstance.get(0);
-        List<StudentInfo> present = circumstance.get(1);
+        List<StudentInfo> present = circumstance.get(0);
+        List<StudentInfo> absent = circumstance.get(1);
         List<StudentInfo> makeup = circumstance.get(2);
 
         List<Map<String, String>> absentMap = getStuInfoMapList(absent);
@@ -323,6 +323,26 @@ public class UserBehaviorController {
         toReturn.put("makeup", getStuInfoMapList(makeup));
 
         return ResponseEntity.ok(toReturn);
+    }
+
+    /**
+     * 老师实时获取签到人数
+     *
+     * @param id 老师id
+     * @param metaId 签到id
+     * @return 比率
+     */
+    @GetMapping("/teacher/meta/{metaId}/getRealTime")
+    public ResponseEntity<Map<String, Object>> getRateRealTime(@PathVariable String id,
+                                                               @PathVariable String metaId){
+        if (teacherService.getMetaByMetaId(metaId)==null){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的签到记录"));
+        }
+        List<List<StudentInfo>> circumstance = teacherService.getAttendanceCircumstance(metaId);
+        int present = circumstance.get(0).size();
+        int all = circumstance.get(0).size() + circumstance.get(1).size() + circumstance.get(2).size();
+        String toShown = String.format("%d/%d", present, all);
+        return ResponseEntity.ok(getMap("Rate", toShown));
     }
 
     /**
