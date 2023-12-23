@@ -565,6 +565,7 @@ public class UserBehaviorController {
 
     /**
      * 导入Excel文件添加班级学生
+     * 注意，老师每次导入都会清空之前该班级的所有学生和发布过的签到
      *
      * @param id      教师id
      * @param classId 班级id
@@ -573,19 +574,19 @@ public class UserBehaviorController {
      */
     @PostMapping("/teacher/classes/{classId}/postExcel")
     @PreAuthorize("#id == authentication.principal.username")
-    public ResponseEntity<Map<String, String>> addClassStudentByExcel(@PathVariable String id,
-                                                                      @PathVariable String classId, @RequestParam(
-            "file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> addClassStudentByExcel(@PathVariable String id,
+                                                                      @PathVariable String classId,
+                                                                      @RequestParam("file") MultipartFile file) {
         logger.info("Add class student by excel request received");
         if (!teacherService.getClassByTeacherId(id).contains(teacherService.getClassById(classId))) {  // 判断是否为该教师的班级
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
         try {
             List<Object> res = teacherService.addClassStudentByExcel(classId, file.getBytes());
-            Map<String, String> map = new HashMap<>();
-            map.put("valid", res.get(0).toString());
-            map.put("invalid", res.get(1).toString());
-            map.put("duplicate", res.get(2).toString());
+            Map<String, Object> map = new HashMap<>();
+            map.put("valid", res.get(0));
+            map.put("invalid", res.get(1));
+            map.put("duplicate", res.get(2));
             return ResponseEntity.ok(map);
         } catch (IOException e) {
             e.printStackTrace();
