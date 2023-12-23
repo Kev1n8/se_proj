@@ -953,10 +953,10 @@ public class UserBehaviorController {
     public ResponseEntity<Map<String, Object>> checkin2(@PathVariable String id,
                                                         @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin2 request received");
-        String classId = attendance.getClassId();
+        String metaId = attendance.getMetaId();
         Long Latitude = attendance.getLatitude();
         Long Longitude = attendance.getLongitude();
-        int res = studentService.doLocation(id, classId, Latitude, Longitude);
+        int res = studentService.doLocation(id, metaId, Latitude, Longitude);
         return switch (res){
             case 0 -> ResponseEntity.ok(getMap("status", "success"));
             case 1 -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "没有对应签到码"));
@@ -971,21 +971,18 @@ public class UserBehaviorController {
 
     /**
      * 二维码签到
-     * 第三次签到需要的信息：学生id，班级id，二维码字符串，签到时间
+     * 第三次签到需要的信息：学生id，二维码字符串（会包含签到需要的信息）
      *
      * @param id         学生id
-     * @param attendance 签到信息
      * @param QRCode     二维码
      * @return 签到结果
      */
     @PutMapping("/student/checkin3")
     @PreAuthorize("#id == authentication.principal.username")
     public ResponseEntity<Map<String, Object>> checkin3(@PathVariable String id,
-                                                        @RequestBody AttendanceDto attendance,
                                                         @RequestParam String QRCode) {
         logger.info("Student checkin3 request received");
-        String classId = attendance.getClassId();
-        int res = studentService.doQR(id, classId, QRCode);
+        int res = studentService.doQR(id, QRCode);
         return switch (res){
             case 0 -> ResponseEntity.ok(getMap("status", "success"));
             case 1 -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "没有对应签到码"));
