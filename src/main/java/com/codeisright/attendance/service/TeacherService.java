@@ -232,6 +232,51 @@ public class TeacherService extends UserService {
     }
 
     /**
+     * Clear up the metas of a class.
+     *
+     * @param classId id of target class
+     * @return true if success, false if no such class or class has no metas
+     */
+    public boolean clearClassMetas(String classId) {
+        List<AttendanceMeta> metas = attendanceMetaRepository.findAllByAclass_Id(classId);
+        if (metas == null) {
+            return false;
+        }
+        attendanceMetaRepository.deleteAll(metas);
+        return true;
+    }
+
+    /**
+     * Clear up the attendance records of a class.
+     *
+     * @param classId id of target class
+     * @return true if success, false if no such class or class has no attendance records
+     */
+    public boolean clearClassAttendance(String classId) {
+        List<Attendance> attendances = attendanceRepository.findByAclass_Id(classId);
+        if (attendances == null) {
+            return false;
+        }
+        attendanceRepository.deleteAll(attendances);
+        return true;
+    }
+
+    /**
+     * Clear up the enrollments of a class.
+     *
+     * @param classId id of target class
+     * @return true if success, false if no such class or class has no enrollments
+     */
+    public boolean clearClassEnrollment(String classId) {
+        List<Enrollment> enrollments = enrollmentRepository.findAllByAclass_Id(classId);
+        if (enrollments == null) {
+            return false;
+        }
+        enrollmentRepository.deleteAll(enrollments);
+        return true;
+    }
+
+    /**
      * Pour students into class by Excel file and flush all things about the class.
      * Have to deal with potential problems like duplicate students, invalid students, etc.
      * So, divided the students into three lists: [valid], [invalid(not exists in Student)], [duplicate].
@@ -243,6 +288,10 @@ public class TeacherService extends UserService {
         if (clazz==null){
             return null;
         }
+
+        clearClassAttendance(classId);// delete all attendance records to prevent data inconsistency
+        clearClassEnrollment(classId);
+        clearClassMetas(classId);
 
         List<StudentInfo> valid = new ArrayList<>();
         List<String> invalid = new ArrayList<>();
@@ -261,7 +310,9 @@ public class TeacherService extends UserService {
                     duplicate.add(info2Add);
             }
             else{
-                Enrollment record = new Enrollment(student2Add, clazz);
+                Enrollment record = new Enrollment();
+                record.setStudent(student2Add);
+                record.setAclass(clazz);
                 enrollmentRepository.save(record);
                 valid.add(info2Add);
             }
