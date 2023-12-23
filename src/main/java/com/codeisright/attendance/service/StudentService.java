@@ -242,7 +242,7 @@ public class StudentService extends UserService {
      */
     public boolean acceptableLocation(Long latitude1, Long longitude1, Long latitude2, Long longitude2) {
         double distance = calculateDistance(latitude1, longitude1, latitude2, longitude2);
-        return distance < 0.1;
+        return distance < 111.1;  // 111.1km
     }
 
     /**
