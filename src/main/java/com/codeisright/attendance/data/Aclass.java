@@ -9,7 +9,9 @@ import org.hibernate.annotations.GenericGenerator;
 @Entity
 public class Aclass {
     @Id
-    @GenericGenerator(name = "UUID", type = org.hibernate.id.uuid.UuidGenerator.class)
+////    @GenericGenerator(name = "UUID", type = org.hibernate.id.uuid.UuidGenerator.class)
+    @GeneratedValue(generator = "UUID")
+    @GenericGenerator(name = "UUID", strategy = "uuid2")
     private String id;
 
     private String title;
