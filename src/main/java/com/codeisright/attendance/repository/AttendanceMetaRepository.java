@@ -10,4 +10,6 @@ public interface AttendanceMetaRepository extends JpaRepository<AttendanceMeta, 
     List<AttendanceMeta> findByAclass_IdOrderByDeadlineDesc(String classId);
 
     List<AttendanceMeta> findByAclass_IdAndNotifiedIsFalseAndDeadlineBefore(String classId, LocalDateTime now);
+
+    List<AttendanceMeta> findAllByAclass_Id(String classId);
 }
