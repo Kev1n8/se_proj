@@ -557,7 +557,7 @@ public class UserBehaviorController {
     public ResponseEntity<Map<String, Object>> addClassStudent(@PathVariable String id, @RequestBody AclassDto clazz) {
         logger.info("Add class request received");
         Aclass result = teacherService.addClass(id, clazz); // 为了得到新分配的班级id
-        if (teacherService.getClassById(result.getId()) == null){
+        if (result.getId() == null){
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的老师或课程"));
         }
         return ResponseEntity.ok(getMap("class", result.toAclassInfo()));
