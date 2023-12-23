@@ -228,6 +228,7 @@ public class TeacherService extends UserService {
         }
         Aclass newClass = new Aclass();
         newClass.setClass(aclass, course, teacher);
+        logger.info("Class added: " + newClass);
         Aclass toReturn = aclassRepository.save(newClass);
         return toReturn;
     }
