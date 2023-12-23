@@ -56,7 +56,7 @@ public class StudentService extends UserService {
      * Update a student account in the database.
      *
      * @param studentId student id
-     * @param student student dto
+     * @param student   student dto
      * @return Student or null if not found
      */
     public Student updateStudent(String studentId, StudentDto student) {
@@ -75,7 +75,7 @@ public class StudentService extends UserService {
      * Change password of a student account.
      *
      * @param studentId id of the student
-     * @param password new password
+     * @param password  new password
      * @return Student
      */
     public Student updatePassword(String studentId, String password) {
@@ -116,7 +116,7 @@ public class StudentService extends UserService {
     /**
      * Get the attendance record of a student in a single metaAtt(if at least checkin step1 successfully before).
      *
-     * @param studentId student id
+     * @param studentId        student id
      * @param attendanceMetaId attendance meta id
      * @return Attendance or null if not found
      */
@@ -129,18 +129,33 @@ public class StudentService extends UserService {
      * Only when the meta has ended or the student has record(whether the status is -1 or 123)
      * will it be returned.
      *
-     * @param classId the id of the class.
+     * @param classId   the id of the class.
      * @param studentId the id of the student.
-     * @param page the page number.
+     * @param page      the page number.
      * @return a page of Student records(metas with boolean) of a class.
      */
-    public Page<StudentMetaRecord> getStudentRecords(String classId, String studentId, int page){
+    public Page<StudentMetaRecord> getStudentRecords(String classId, String studentId, int page) {
         logger.debug("Getting student's records of a class. Page : " + page);
         List<AttendanceMeta> all = getMetasByClassId(classId);
         List<StudentMetaRecord> content = new ArrayList<>();
-        for (AttendanceMeta item : all){
+        for (AttendanceMeta item : all) {
             Attendance record = getAttendanceByStudentAndMeta(studentId, item.getId());
-            if (record == null){
+            if (record == null) {
+                if (item.getDeadline().isBefore(LocalDateTime.now())) {
+                    StudentMetaRecord newRecord =
+                            new StudentMetaRecord(
+                                    item.getId(),
+                                    item.getRequirement(),
+                                    0,
+                                    item.getStart(),
+                                    item.getDeadline(),
+                                    LocalDateTime.now(),
+                                    0L,
+                                    0L,
+                                    classId
+                            );
+                    content.add(newRecord);
+                }
                 continue;
             }
             content.add(new StudentMetaRecord(item, record));
@@ -155,7 +170,7 @@ public class StudentService extends UserService {
      * Return if the student is in the class.
      *
      * @param studentId student id
-     * @param classId class id
+     * @param classId   class id
      * @return true if the student is in the class, false otherwise
      */
     private boolean inClass(String studentId, String classId) {
@@ -167,8 +182,8 @@ public class StudentService extends UserService {
      * Only used when a student checkin step1 successfully.
      *
      * @param studentId student id
-     * @param classId class id
-     * @param time checkin time
+     * @param classId   class id
+     * @param time      checkin time
      * @return true if successfully added, false otherwise
      */
     public boolean addCheckin(String studentId, String classId, String metaId, LocalDateTime time) {
@@ -181,7 +196,7 @@ public class StudentService extends UserService {
             return false;
         }
 
-        Attendance toAdd = new Attendance(student, aClass, meta, 1,  time, null, null);
+        Attendance toAdd = new Attendance(student, aClass, meta, 1, time, null, null);
         attendanceRepository.save(toAdd);
         return true;
     }
@@ -193,8 +208,8 @@ public class StudentService extends UserService {
      *
      * @param recordToForward the latest checkin record
      * @param time            current time
-     * @param latitude       latitude of the current location
-     * @param longitude     longitude of the current location
+     * @param latitude        latitude of the current location
+     * @param longitude       longitude of the current location
      */
     public boolean forwardCheckin(Attendance recordToForward, LocalDateTime time, Long latitude, Long longitude) {
         if (recordToForward == null) {
@@ -235,9 +250,9 @@ public class StudentService extends UserService {
      * Check if the location is acceptable, which means the distance between the two locations should be less than 100m.
      *
      * @param latitude1  latitude of location1
-     * @param longitude1  longitude of location1
+     * @param longitude1 longitude of location1
      * @param latitude2  latitude of location2
-     * @param longitude2  longitude of location2
+     * @param longitude2 longitude of location2
      * @return true if the distance is less than 100m, false otherwise
      */
     public boolean acceptableLocation(Long latitude1, Long longitude1, Long latitude2, Long longitude2) {
@@ -249,7 +264,7 @@ public class StudentService extends UserService {
      * Check if the current time is in the time range of the latest attendance meta.
      *
      * @param metaId attendance meta id
-     * @param time current time
+     * @param time   current time
      * @return true if the current time is in the time range of the latest attendance meta, false otherwise
      */
     public boolean isInTime(String metaId, LocalDateTime time) {
@@ -265,7 +280,7 @@ public class StudentService extends UserService {
      * Checkin step1 for a student.
      *
      * @param studentId student id
-     * @param metaId attendance meta id
+     * @param metaId    attendance meta id
      * @return 0 if successfully checked in, 1 if the student is not enrolled in the class, 2 if hove not started or
      * already ended, 3 if the student has already checked in, 4 for unknown meta
      * 5 for unknown error
@@ -276,7 +291,7 @@ public class StudentService extends UserService {
             return 4;
         }
         String classId = meta.getAclass().getId();
-        if(!inClass(studentId, classId)) {
+        if (!inClass(studentId, classId)) {
             return 1;
         }
         Attendance record = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
@@ -288,7 +303,7 @@ public class StudentService extends UserService {
         if (!isInTime(metaId, time)) {
             return 2;
         }
-        if(addCheckin(studentId, classId, metaId, time)) {
+        if (addCheckin(studentId, classId, metaId, time)) {
             logger.info("Student: {} checked in for class: {}, meta:{}", studentId, classId, metaId);
             return 0;
         }
@@ -299,8 +314,8 @@ public class StudentService extends UserService {
      * Checkin step2 for a student.
      *
      * @param studentId student id
-     * @param metaId attendance meta id
-     * @param latitute latitude of the current location
+     * @param metaId    attendance meta id
+     * @param latitute  latitude of the current location
      * @param longitute longitude of the current location
      * @return 0 if successfully checked in, 1 if meta not exists, 2 if student hasn't done step1 checkin(status not 1),
      * 3 if not in time, 4 if not acceptable location, 5 for no need to do location
@@ -312,13 +327,13 @@ public class StudentService extends UserService {
             return 1;
         }
         Attendance original = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
-        if(original == null) {
+        if (original == null) {
             return 2;
         }
-        if(original.getStatus()>=latest_record.getRequirement()){
+        if (original.getStatus() >= latest_record.getRequirement()) {
             return 5;
         }
-        if(original.getStatus() != 1) {
+        if (original.getStatus() != 1) {
             return 2;
         }
         Long l1 = latest_record.getLatitude();
@@ -330,7 +345,7 @@ public class StudentService extends UserService {
         if (!acceptableLocation(latitute, longitute, l1, l2)) {//不在签到范围内
             return 4;
         }
-        if (forwardCheckin(original, time, latitute, longitute)){
+        if (forwardCheckin(original, time, latitute, longitute)) {
             logger.info("Student: {} forwarded checkin for metaId: {}", studentId, metaId);
             return 0;
         }
@@ -341,13 +356,13 @@ public class StudentService extends UserService {
      * Checkin step3 for a student.
      *
      * @param studentId student id
-     * @param metaId meta id
-     * @param QRCode QRCode
+     * @param QRCode    QRCode
      * @return 0 if successfully checked in, 1 if meta not exists, 2 if student hasn't done step2 checkin(status not 2),
-     * 3 if timeout, 4 if qr has expired, 5 if unknown qr, 6 if already checkin, 7 for unknown error
+     * 3 if timeout, 4 if qr has expired, 6 if already checkin, 7 for unknown error
      */
-    public int doQR(String studentId, String metaId, String QRCode) {
+    public int doQR(String studentId, String QRCode) {
         LocalDateTime time = LocalDateTime.now();
+        String metaId = QRCodeUtils.getMetaId(QRCode);
         AttendanceMeta latest_record = attendanceMetaRepository.findById(metaId).orElse(null);
         if (latest_record == null) {
             return 1;
@@ -356,7 +371,7 @@ public class StudentService extends UserService {
         if (original == null) {
             return 2;
         }
-        if (original.getStatus()>=latest_record.getRequirement()){
+        if (original.getStatus() >= latest_record.getRequirement()) {
             return 6;
         }
         if (original.getStatus() != 2) {
@@ -368,10 +383,7 @@ public class StudentService extends UserService {
         if (!QRCodeUtils.qrInTime(QRCode)) {
             return 4;
         }
-        if (!QRCodeUtils.isMetaIdEqual(QRCode, metaId)) {
-            return 5;
-        }
-        if(forwardCheckin(original, time, -1L, -1L)){
+        if (forwardCheckin(original, time, -1L, -1L)) {
             logger.info("Student: {} forwarded checkin for meta: {}", studentId, metaId);
             return 0;
         }
