@@ -27,12 +27,6 @@ public class QRCodeUtils {
         return System.currentTimeMillis() < timestamp;
     }
 
-    public static boolean isMetaIdEqual(String metaId, String QRCode) {
-        String data = new String(Base64.getDecoder().decode(QRCode));
-        String metaIdInQRCode = data.substring(13, 13 + metaId.length());
-        return metaId.equals(metaIdInQRCode);
-    }
-
     public static String getMetaId(String QRCode) {
         String data = new String(Base64.getDecoder().decode(QRCode));
         return data.substring(13);
