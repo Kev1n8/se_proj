@@ -105,16 +105,21 @@ public class ExcelHandler {
         ByteArrayInputStream content = new ByteArrayInputStream(excelFile);
         Workbook workbook = null;
         try {
-            workbook = new XSSFWorkbook(content);
+            workbook = new XSSFWorkbook(content);  // will read .xlsx
         }catch (Exception e){
             logger.error("Error occurred when parsing excel file", e);
         }
         assert workbook != null;
         Sheet sheet = workbook.getSheetAt(0);
         for (int i = 0; i < sheet.getRow(0).getLastCellNum(); i++) {
-            if (sheet.getRow(0).getCell(i).getStringCellValue().equals("学号")){
+            if (sheet.getRow(i).getCell(i).getStringCellValue().equals("学号")){
                 for (int j = 1; j <= sheet.getLastRowNum(); j++) {
-                    list.add(sheet.getRow(j).getCell(i).getStringCellValue());
+                    String type = sheet.getRow(j).getCell(i).getCellType().toString();
+                    switch (type) {
+                        case "STRING" -> list.add(sheet.getRow(j).getCell(i).getStringCellValue());
+                        case "NUMERIC" -> list.add(String.valueOf((int) sheet.getRow(j).getCell(i).getNumericCellValue()));
+                        default -> logger.error("Unknown type: " + type);
+                    }
                 }
             }
         }
