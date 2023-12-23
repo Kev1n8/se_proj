@@ -126,27 +126,27 @@ public class Teacher implements UserDetails {
         return new TeacherInfo() {
             @Override
             public String getId() {
-                return this.getId();
+                return id;
             }
 
             @Override
             public String getName() {
-                return this.getName();
+                return name;
             }
 
             @Override
             public int getAge() {
-                return this.getAge();
+                return age;
             }
 
             @Override
             public String getGender() {
-                return this.getGender();
+                return gender;
             }
 
             @Override
             public String getDepartment() {
-                return this.getDepartment();
+                return department;
             }
         };
     }

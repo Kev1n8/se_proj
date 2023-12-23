@@ -120,32 +120,32 @@ public class Student implements UserDetails {
         return new StudentInfo() {
             @Override
             public String getId() {
-                return Student.this.getUsername();
+                return id;
             }
 
             @Override
             public String getName() {
-                return Student.this.getName();
+                return name;
             }
 
             @Override
             public int getAge() {
-                return Student.this.getAge();
+                return age;
             }
 
             @Override
             public String getGender() {
-                return Student.this.getGender();
+                return gender;
             }
 
             @Override
             public String getMajor() {
-                return Student.this.getMajor();
+                return major;
             }
 
             @Override
             public String getDescription() {
-                return Student.this.getDescription();
+                return description;
             }
         };
     }
