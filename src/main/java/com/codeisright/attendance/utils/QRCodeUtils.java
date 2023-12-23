@@ -11,24 +11,13 @@ import java.util.Base64;
 
 public class QRCodeUtils {
 
-    // 生成 QR Code
+    // 生成 QR 对应的String
     public static String generateQRCode(String data, Long secondsDelay) {
-        try {
-            // 生成随机前缀，前13位为secondsDelay秒后的时间戳
-            String randomPrefix = String.valueOf(System.currentTimeMillis() + secondsDelay * 1000);
-            data = randomPrefix + data;
-            QRCodeWriter qrCodeWriter = new QRCodeWriter();
-            BitMatrix bitMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, 200, 200);
-
-            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
-
-            // 将生成的 QR Code 转换为 Base64 字符串
-            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        } catch (WriterException | IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        // 生成随机前缀，前13位为secondsDelay秒后的时间戳
+        String randomPrefix = String.valueOf(System.currentTimeMillis() + secondsDelay * 1000);
+        data = randomPrefix + data;
+        //
+        return Base64.getEncoder().encodeToString(data.getBytes());
     }
 
     public static boolean qrInTime(String QRCode) {
@@ -42,5 +31,10 @@ public class QRCodeUtils {
         String data = new String(Base64.getDecoder().decode(QRCode));
         String metaIdInQRCode = data.substring(13, 13 + metaId.length());
         return metaId.equals(metaIdInQRCode);
+    }
+
+    public static String getMetaId(String QRCode) {
+        String data = new String(Base64.getDecoder().decode(QRCode));
+        return data.substring(13);
     }
 }
