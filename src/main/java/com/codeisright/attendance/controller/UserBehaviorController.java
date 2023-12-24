@@ -856,7 +856,9 @@ public class UserBehaviorController {
         if (record == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "学生没有参加这次签到"));
         }
-        return ResponseEntity.ok(getMap("record", new AttendanceDto(record)));
+        AttendanceMeta meta = studentService.getMetaByMetaId(record.getMeta().getId());
+        StudentMetaRecord toReturn = new StudentMetaRecord(meta, record);
+        return ResponseEntity.ok(getMap("record", toReturn));
     }
 
     /**
