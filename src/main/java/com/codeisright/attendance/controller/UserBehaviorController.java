@@ -942,7 +942,7 @@ public class UserBehaviorController {
 
     /**
      * 地理位置签到，将检查地理位置是否满足要求，满足则更新Attendance表中的Status为2和Location
-     * 第二次签到需要的信息：学生id，班级id，经度，纬度，签到时间，metaId
+     * 第二次签到需要的信息：学生id，班级id，经度，纬度，签到时间，班级id
      *
      * @param id         学生id
      * @param attendance 签到信息
@@ -953,13 +953,14 @@ public class UserBehaviorController {
     public ResponseEntity<Map<String, Object>> checkin2(@PathVariable String id,
                                                         @RequestBody AttendanceDto attendance) {
         logger.info("Student checkin2 request received");
-        String metaId = attendance.getMetaId();
+//        String metaId = attendance.getMetaId();
+        String classId = attendance.getClassId();
         Long Latitude = attendance.getLatitude();
         Long Longitude = attendance.getLongitude();
-        int res = studentService.doLocation(id, metaId, Latitude, Longitude);
+        int res = studentService.doLocation(id, classId, Latitude, Longitude);
         return switch (res){
             case 0 -> ResponseEntity.ok(getMap("status", "success"));
-            case 1 -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "没有对应签到码"));
+            case 1 -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(getMap("message", "不存在的班级或签到"));
             case 2 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "学生还没有完成签到Step1或状态不为1"));
             case 3 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "有效期已过"));
             case 4 -> ResponseEntity.status(HttpStatus.BAD_REQUEST).body(getMap("message", "地理位置不符合要求"));

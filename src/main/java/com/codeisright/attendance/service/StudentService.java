@@ -314,18 +314,24 @@ public class StudentService extends UserService {
      * Checkin step2 for a student.
      *
      * @param studentId student id
-     * @param metaId    attendance meta id
+     * @param classId id of the class
      * @param latitute  latitude of the current location
      * @param longitute longitude of the current location
      * @return 0 if successfully checked in, 1 if meta not exists, 2 if student hasn't done step1 checkin(status not 1),
      * 3 if not in time, 4 if not acceptable location, 5 for no need to do location
      */
-    public int doLocation(String studentId, String metaId, Long latitute, Long longitute) {
+    public int doLocation(String studentId, String classId, Long latitute, Long longitute) {
         LocalDateTime time = LocalDateTime.now();
-        AttendanceMeta latest_record = attendanceMetaRepository.findById(metaId).orElse(null);
-        if (latest_record == null) {
+        Aclass target = aclassRepository.findById(classId).orElse(null);
+        if (target==null){
             return 1;
         }
+        List<AttendanceMeta> records = attendanceMetaRepository.findByAclass_IdOrderByDeadlineDesc(classId);
+        if (records==null){
+            return 1;
+        }
+        AttendanceMeta latest_record = records.get(0);
+        String metaId = latest_record.getId();
         Attendance original = attendanceRepository.findByStudent_IdAndMeta_Id(studentId, metaId);
         if (original == null) {
             return 2;
