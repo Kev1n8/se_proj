@@ -52,6 +52,7 @@ public class ApplicationSecurity extends SecurityConfigurerAdapter<DefaultSecuri
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/register/**").permitAll()
                         .requestMatchers("/login").permitAll()
+                        .requestMatchers("/usr/{id}/teacher/meta/*/qr").permitAll()
                         .requestMatchers("/usr/{id}/teacher/**").hasRole("TEACHER")
                         .requestMatchers("/usr/{id}/student/**").hasRole("STUDENT")
                         .anyRequest().authenticated()
