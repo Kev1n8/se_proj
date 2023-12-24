@@ -9,7 +9,7 @@ public class CorsGlobalConfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")  // 这里可以调整为需要的路径模式
-                .allowedOrigins("http://localhost:8080")  // 允许的来源，可根据需要调整
+                .allowedOriginPatterns("*")  // 允许的来源，可根据需要调整
                 .allowedMethods("GET", "POST", "PUT", "DELETE")  // 允许的 HTTP 方法
                 .allowedHeaders("*")  // 允许的头信息
                 .allowCredentials(true)  // 是否允许发送 Cookie
