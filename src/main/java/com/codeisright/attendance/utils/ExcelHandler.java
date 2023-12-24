@@ -85,17 +85,13 @@ public class ExcelHandler {
             logger.info("Attendance rate of " + (i + 1) + " is " + num);
         }
 
-        logger.info("Saving attendance to " + path);
         byte[] toReturn = new byte[0];
-        try (FileOutputStream fileOutputStream = new FileOutputStream(path, false);
-             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
-            workbook.write(fileOutputStream);
+        try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
             workbook.write(byteArrayOutputStream);
             toReturn = byteArrayOutputStream.toByteArray();
-            logger.info("File saved to " + path);
             workbook.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error happened when saving file to stream:", e);
         }
         return toReturn;
     }
