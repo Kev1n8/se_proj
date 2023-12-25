@@ -28,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -359,12 +362,19 @@ public class UserBehaviorController {
         if (excelBytes == null || excelBytes.length == 0) {
             return ResponseEntity.noContent().build();
         }
-        String title = teacherService.getClassInfo(classId).getTitle();
         ByteArrayResource resource = new ByteArrayResource(excelBytes);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(resource.contentLength());
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        headers.setContentDispositionFormData("attachment", title + ".xlsx");
+        //title是中文的话，需要进行转码，否则会出现乱码
+        String title = teacherService.getClassInfo(classId).getTitle();
+        String filename = title + ".xlsx";
+        try {
+            String encodedFilename = URLEncoder.encode(filename, StandardCharsets.UTF_8.name());
+            headers.setContentDispositionFormData("attachment", encodedFilename);
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Error happened when encoding filename:", e);
+        }
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
