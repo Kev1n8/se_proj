@@ -376,7 +376,7 @@ public class UserBehaviorController {
             logger.error("Error happened when encoding filename:", e);
         }
         //允许前端获取文件名
-        headers.set("Access-Control-Expose-Headers", "Content-Disposition");
+        headers.setAccessControlExposeHeaders(List.of("Content-Disposition"));
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
