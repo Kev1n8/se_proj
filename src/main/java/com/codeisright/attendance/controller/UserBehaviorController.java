@@ -36,7 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "https://localhost:8080")
+//@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/usr/{id}")
 public class UserBehaviorController {
@@ -366,7 +366,7 @@ public class UserBehaviorController {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(resource.contentLength());
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
-        //title是中文的话，需要进行转码，否则会出现乱码
+
         String title = teacherService.getClassInfo(classId).getTitle();
         String filename = title + ".xlsx";
         try {
@@ -375,6 +375,8 @@ public class UserBehaviorController {
         } catch (UnsupportedEncodingException e) {
             logger.error("Error happened when encoding filename:", e);
         }
+        //允许前端获取文件名
+        headers.set("Access-Control-Expose-Headers", "Content-Disposition");
         return ResponseEntity.ok()
                 .headers(headers)
                 .body(resource);
