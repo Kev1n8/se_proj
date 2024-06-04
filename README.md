@@ -1,6 +1,25 @@
 # se_proj
 a proj of software engineering
 
+## Features
+
+### Useful APIs
+A backend application of a class check-in booking service, providing APIs that do
+
+- Retrieving profile of users
+- Retrieving info of classes or students
+- Retrieving history of checkin records
+- Retrieving checkin statistics in real time
+- Setting students of a class
+- Generating checkin code (QR or 6-figure)
+- Basic checkin operation from students
+
+### 3 Level Checkin
+
+1. Code only
+2. Code + location
+3. Code + location + QR code
+
 ## 后端部署说明
 
 首先，确保Redis和MySQL已经安装并启动（端口号分别为6379和3306）
