@@ -1,20 +1,21 @@
 # se_proj
 a proj of software engineering
 
-## Features
+## 🚀 Features
 
 ### Useful APIs
-A backend application of a class check-in booking service, providing APIs that do
 
-- Retrieving profile of users
-- Retrieving info of classes or students
-- Retrieving history of checkin records
-- Retrieving checkin statistics in real time
-- Setting students of a class
-- Generating checkin code (QR or 6-figure)
-- Basic checkin operation from students
+This backend application powers a class check-in booking service, offering a range of APIs to enhance your experience:
 
-### 3 Level Checkin
+- 📋 Retrieve user profiles
+- 📊 Access class and student information
+- 📅 View check-in history
+- 📈 Monitor real-time check-in statistics
+- 📝 Set student associations for a class
+- 🔍 Generate check-in codes (QR or 6-figure)
+- ✅ Perform basic check-in operations as a student
+
+### 🎯 3 Level Checkin
 
 1. Code only
 2. Code + location
